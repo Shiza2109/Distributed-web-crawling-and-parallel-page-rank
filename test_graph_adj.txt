@@ -1,0 +1,10 @@
+# Graph for PageRank (Adjacency List Format)
+# Nodes: 5
+# Edges: 9
+# Format: node_id: outlink_id1,outlink_id2,...
+
+0:1,2,3
+1:2,4
+2:0
+3:4
+4:0,1
