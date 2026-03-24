@@ -1,4 +1,3 @@
-/* graph.c */
 #include "graph.h"
 #include <stdio.h>
 #include <string.h>
@@ -9,7 +8,7 @@
 typedef struct {
     char* url;
     int id;
-    int* outlinks;  /* will store neighbor IDs */
+    int* outlinks;  // will store neighbor IDs 
     int outlink_count;
     int outlink_capacity;
 } Node;
@@ -18,10 +17,10 @@ struct Graph {
     Node* nodes;
     int node_count;
     int node_capacity;
-    pthread_rwlock_t lock;  /* thread safety */
+    pthread_rwlock_t lock;  // thread safety 
 };
 
-/* Helper function to count total edges (caller must hold lock) */
+// Helper function to count total edges (caller must hold lock) 
 static uint64_t graph_count_edges_locked(Graph *g) {
     uint64_t total = 0;
     for (int i = 0; i < g->node_count; i++) {
@@ -30,7 +29,7 @@ static uint64_t graph_count_edges_locked(Graph *g) {
     return total;
 }
 
-/* Initialize - Aleena's implementation */
+// Initialize - Aleena's implementation
 Graph* graph_create() {
     Graph* g = malloc(sizeof(Graph));
     if (!g) return NULL;
@@ -47,13 +46,13 @@ Graph* graph_create() {
     return g;
 }
 
-/* Add node - Aleena's implementation with improvements */
+
 int graph_add_node(Graph* g, const char* url) {
     if (!g || !url) return -1;
     
     pthread_rwlock_wrlock(&g->lock);
     
-    /* Check if exists (linear search for now) */
+    // Check if exists (linear search for now)
     for (int i = 0; i < g->node_count; i++) {
         if (strcmp(g->nodes[i].url, url) == 0) {
             pthread_rwlock_unlock(&g->lock);
@@ -61,7 +60,7 @@ int graph_add_node(Graph* g, const char* url) {
         }
     }
     
-    /* Resize nodes array if needed */
+    // Resize nodes array if needed
     if (g->node_count == g->node_capacity) {
         int new_capacity = g->node_capacity * 2;
         Node *tmp = realloc(g->nodes, sizeof(Node) * new_capacity);
@@ -73,7 +72,7 @@ int graph_add_node(Graph* g, const char* url) {
         g->node_capacity = new_capacity;
     }
 
-    /* Add new node */
+    // Add new node
     int id = g->node_count++;
     g->nodes[id].url = strdup(url);
     if (!g->nodes[id].url) {
@@ -96,12 +95,12 @@ int graph_add_node(Graph* g, const char* url) {
     return id;
 }
 
-/* Add edge - Aleena's implementation */
+// Add edge
 void graph_add_edge(void *graph, const char *from_url, const char *to_url) {
     Graph *g = (Graph *)graph;
     if (!g || !from_url || !to_url) return;
 
-    /* Get IDs for both nodes */
+    // Get IDs for both nodes
     int from_id = graph_add_node(g, from_url);
     int to_id = graph_add_node(g, to_url);
     
@@ -110,7 +109,7 @@ void graph_add_edge(void *graph, const char *from_url, const char *to_url) {
     pthread_rwlock_wrlock(&g->lock);
     Node *from_node = &g->nodes[from_id];
 
-    /* Check for duplicate edge */
+    // Check for duplicate edge
     for (int i = 0; i < from_node->outlink_count; i++) {
         if (from_node->outlinks[i] == to_id) {
             pthread_rwlock_unlock(&g->lock);
@@ -118,7 +117,7 @@ void graph_add_edge(void *graph, const char *from_url, const char *to_url) {
         }
     }
 
-    /* Resize if needed */
+    // Resize (if needed)
     if (from_node->outlink_count == from_node->outlink_capacity) {
         int new_capacity = from_node->outlink_capacity * 2;
         int *tmp = realloc(from_node->outlinks, sizeof(int) * new_capacity);
@@ -130,12 +129,12 @@ void graph_add_edge(void *graph, const char *from_url, const char *to_url) {
         from_node->outlink_capacity = new_capacity;
     }
 
-    /* Add the edge */
+    // Add the edge
     from_node->outlinks[from_node->outlink_count++] = to_id;
     pthread_rwlock_unlock(&g->lock);
 }
 
-/* Get node ID - Abdur's integration point */
+// Get node ID - Abdur's integration point
 int graph_get_node_id(void *graph, const char *url) {
     Graph *g = (Graph *)graph;
     if (!g || !url) return -1;
@@ -153,11 +152,8 @@ int graph_get_node_id(void *graph, const char *url) {
     return -1;
 }
 
-/* ============================================ */
-/* Muhammad Ibrahim's Functions for Milestone 1 */
-/* ============================================ */
 
-/* Save graph in adjacency list or edge list format */
+// Save graph in adjacency list or edge list format 
 int graph_save(void *graph, const char *filename, const char *format) {
     Graph *g = (Graph *)graph;
     if (!g || !filename || !format) return -1;
@@ -171,7 +167,7 @@ int graph_save(void *graph, const char *filename, const char *format) {
     pthread_rwlock_rdlock(&g->lock);
     
     if (strcmp(format, "adjacency") == 0) {
-        /* Format: node_id: outlink1,outlink2,outlink3... */
+        // Format: node_id: outlink1,outlink2,outlink3...
         fprintf(f, "# Graph for PageRank (Adjacency List Format)\n");
         fprintf(f, "# Nodes: %d\n", g->node_count);
         fprintf(f, "# Edges: %lu\n", graph_count_edges_locked(g));
@@ -189,7 +185,7 @@ int graph_save(void *graph, const char *filename, const char *format) {
         }
     } 
     else if (strcmp(format, "edgelist") == 0) {
-        /* Format: source_id target_id */
+        // Format: source_id target_id 
         fprintf(f, "# Graph for PageRank (Edge List Format)\n");
         fprintf(f, "# Nodes: %d\n", g->node_count);
         fprintf(f, "# Edges: %lu\n", graph_count_edges_locked(g));
@@ -218,7 +214,7 @@ int graph_save(void *graph, const char *filename, const char *format) {
     return 0;
 }
 
-/* Save URL-to-ID mapping for debugging and reproduction */
+// Save URL-to-ID mapping for debugging and reproduction 
 int graph_save_url_map(void *graph, const char *filename) {
     Graph *g = (Graph *)graph;
     if (!g || !filename) return -1;
@@ -246,7 +242,7 @@ int graph_save_url_map(void *graph, const char *filename) {
     return 0;
 }
 
-/* Get graph statistics */
+// Get graph stats
 void graph_get_stats(void *graph, uint64_t *out_nodes, uint64_t *out_edges) {
     Graph *g = (Graph *)graph;
     if (!g) {
@@ -263,7 +259,7 @@ void graph_get_stats(void *graph, uint64_t *out_nodes, uint64_t *out_edges) {
     pthread_rwlock_unlock(&g->lock);
 }
 
-/* Free all graph resources */
+// Free all graph resources
 void graph_destroy(void *graph) {
     Graph *g = (Graph *)graph;
     if (!g) return;

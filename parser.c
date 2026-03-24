@@ -2,7 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
-
+#include "frontier.h"
 // Case-insensitive substring search 
 const char* my_strcasestr(const char* haystack, const char* needle) {
     if (!*needle) return haystack;

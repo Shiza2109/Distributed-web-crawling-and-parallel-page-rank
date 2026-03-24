@@ -100,3 +100,26 @@ void policy_extract_domain(const char *url, char *domain_out, size_t max_len) {
     strncpy(domain_out, start, len);
     domain_out[len] = '\0';
 }
+
+void policy_destroy(CrawlPolicy *policy) {
+    if (!policy) return;
+    
+    // Free seed domains 
+    if (policy->seed_domains) {
+        for (int i = 0; i < policy->num_seed_domains; i++) {
+            free(policy->seed_domains[i]);
+        }
+        free(policy->seed_domains);
+    }
+    
+    // Free allowed domains 
+    if (policy->allowed_domains) {
+        for (int i = 0; i < policy->num_allowed_domains; i++) {
+            free(policy->allowed_domains[i]);
+        }
+        free(policy->allowed_domains);
+    }
+    
+    pthread_mutex_destroy(&policy->lock);
+    free(policy);
+}

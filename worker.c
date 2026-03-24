@@ -1,5 +1,4 @@
-/* worker.c */
-
+/* worker.c - Updated to fix user_agent issue */
 #include "worker.h"
 #include "fetch.h"
 #include "parser.h"
@@ -10,7 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-/* ── link buffer: stack-allocated inside each worker thread ── */
+// link buffer: stack-allocated inside each worker thread 
 typedef struct {
     char urls[PARSER_MAX_LINKS_PER_PAGE][FR_MAX_URL_LEN];
     int  count;
@@ -26,6 +25,9 @@ static void *worker_thread(void *arg) {
     int        depth;
     FetchResult result;
     LinkBuf    links;
+    
+    // User agent string
+    const char *user_agent = "PDC-Crawler/1.0 (Educational Project)";
 
     printf("[Worker %d] started\n", w->worker_id);
 
@@ -34,16 +36,15 @@ static void *worker_thread(void *arg) {
         printf("[Worker %d] depth=%d  %s\n", w->worker_id, depth, url);
 
         /* ── 1. fetch ── */
-        fetch_url(url, w->frontier->policy.user_agent, &result);
+        fetch_url(url, user_agent, &result);
 
-        /* ── 2. handle redirect ──
-               frontier_mark_fetched re-queues the Location URL          */
+        /* ── 2. handle redirect ── */
         if (result.outcome == FETCH_REDIRECT) {
-            /* result.url holds the Location value curl captured          */
             frontier_mark_fetched(w->frontier, url,
                                   FETCH_REDIRECT,
                                   result.url[0] ? result.url : NULL,
                                   result.http_code);
+            fetch_result_free(&result);
             continue;
         }
 
@@ -60,25 +61,28 @@ static void *worker_thread(void *arg) {
                     result.http_code, url);
             frontier_mark_fetched(w->frontier, url,
                                   result.outcome, NULL, result.http_code);
+            fetch_result_free(&result);
             continue;
         }
 
-        /* ── 4. extract links (teammate's parser) ── */
+        /* ── 4. extract links ── */
         links.count = parser_extract_links(result.html, result.url,
                                             links.urls,
                                             PARSER_MAX_LINKS_PER_PAGE);
 
         /* ── 5. push discovered links back into frontier ── */
-        if (links.count > 0)
+        if (links.count > 0) {
             frontier_push_links(w->frontier,
                                  links.urls,
                                  links.count,
-                                 result.url,      /* parent URL for relative resolution */
+                                 result.url,
                                  depth + 1);
+        }
 
-        /* ── 6. record graph edges (teammate's graph module) ── */
-        for (int i = 0; i < links.count; i++)
+        /* ── 6. record graph edges ── */
+        for (int i = 0; i < links.count; i++) {
             graph_add_edge(w->graph, result.url, links.urls[i]);
+        }
 
         /* ── 7. tell frontier this URL succeeded ── */
         frontier_mark_fetched(w->frontier, url,
@@ -115,9 +119,9 @@ int worker_pool_start(WorkerPool *pool,
         if (rc != 0) {
             fprintf(stderr, "[pool] pthread_create failed for worker %d: %d\n",
                     i, rc);
-            /* signal already-running workers to stop */
+            // signal already-running workers to stop 
             frontier_shutdown(frontier);
-            /* join the ones that started */
+            // join the ones that started 
             for (int j = 0; j < i; j++)
                 pthread_join(pool->threads[j], NULL);
             return -1;
@@ -133,20 +137,3 @@ void worker_pool_join(WorkerPool *pool) {
         pthread_join(pool->threads[i], NULL);
     printf("[Pool] all workers joined\n");
 }
-```
-
----
-
-## How the two files relate to everything else
-```
-frontier_pop()          ← blocks worker until a URL is ready
-      ↓
-fetch_url()             ← fetch.c: libcurl GET, content-type check
-      ↓
-parser_extract_links()  ← teammate's parser.c: extract <a href>
-      ↓
-frontier_push_links()   ← feeds new URLs back into the frontier
-graph_add_edge()        ← teammate's graph.c: writes edge to TSV
-      ↓
-frontier_mark_fetched() ← tells frontier: success / retry / discard
-fetch_result_free()     ← free HTML buffer

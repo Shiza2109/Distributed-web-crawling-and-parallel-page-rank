@@ -1,4 +1,3 @@
-/* crawl_policy.h - Add to frontier module */
 #ifndef CRAWL_POLICY_H
 #define CRAWL_POLICY_H
 
@@ -43,5 +42,7 @@ void policy_record_fetch(CrawlPolicy *policy);
 
 /* Extract domain from URL (helper) */
 void policy_extract_domain(const char *url, char *domain_out, size_t max_len);
+
+void policy_destroy(CrawlPolicy *policy);
 
 #endif
