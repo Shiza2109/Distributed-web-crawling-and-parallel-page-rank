@@ -1,9 +1,0 @@
-# URL to ID Mapping
-# Total nodes: 5
-# Format: node_id: url
-
-0: http://a.com
-1: http://b.com
-2: http://c.com
-3: http://d.com
-4: http://e.com
