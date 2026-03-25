@@ -1,4 +1,4 @@
-/* worker.c - Updated to fix user_agent issue */
+/* worker.c */
 #include "worker.h"
 #include "fetch.h"
 #include "parser.h"
@@ -27,7 +27,7 @@ static void *worker_thread(void *arg) {
     LinkBuf    links;
     
     // User agent string
-    const char *user_agent = "PDC-Crawler/1.0 (Educational Project)";
+    const char *user_agent = "Web-Crawler";
 
     printf("[Worker %d] started\n", w->worker_id);
 
@@ -43,7 +43,8 @@ static void *worker_thread(void *arg) {
             frontier_mark_fetched(w->frontier, url,
                                   FETCH_REDIRECT,
                                   result.url[0] ? result.url : NULL,
-                                  result.http_code);
+                                  result.http_code,
+                                  depth);
             fetch_result_free(&result);
             continue;
         }
@@ -60,7 +61,8 @@ static void *worker_thread(void *arg) {
                     result.outcome == FETCH_CONTENT_SKIP ? "NON-HTML" : "ERROR",
                     result.http_code, url);
             frontier_mark_fetched(w->frontier, url,
-                                  result.outcome, NULL, result.http_code);
+                                  result.outcome, NULL, result.http_code,
+                                  depth);
             fetch_result_free(&result);
             continue;
         }
@@ -86,7 +88,8 @@ static void *worker_thread(void *arg) {
 
         /* ── 7. tell frontier this URL succeeded ── */
         frontier_mark_fetched(w->frontier, url,
-                               FETCH_OK, NULL, result.http_code);
+                               FETCH_OK, NULL, result.http_code,
+                               depth);
 
         /* ── 8. free HTML buffer ── */
         fetch_result_free(&result);

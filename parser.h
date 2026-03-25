@@ -2,8 +2,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "frontier.h"
+
 #define PARSER_MAX_LINKS_PER_PAGE 256
-#define FR_MAX_URL_LEN            4096
 
 /**
  * parser_extract_links - find <a href="..."> tags in HTML

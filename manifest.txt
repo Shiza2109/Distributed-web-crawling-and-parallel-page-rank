@@ -1,0 +1,1640 @@
+------------------------------------------------------------
+timestamp=2026-03-26 00:27:35
+mode=compare
+profile=small
+threads=1
+max_depth=0
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 4453.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[MANUAL]
+Elapsed: 4078.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[COMPARISON]
+Threaded time: 4453.00 ms
+Manual time: 4078.00 ms
+Speedup (manual/threaded): 0.92x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:27:43
+mode=compare
+profile=small
+threads=2
+max_depth=0
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 3078.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[MANUAL]
+Elapsed: 4562.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[COMPARISON]
+Threaded time: 3078.00 ms
+Manual time: 4562.00 ms
+Speedup (manual/threaded): 1.48x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:27:49
+mode=compare
+profile=small
+threads=4
+max_depth=0
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 1875.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[MANUAL]
+Elapsed: 4344.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[COMPARISON]
+Threaded time: 1875.00 ms
+Manual time: 4344.00 ms
+Speedup (manual/threaded): 2.32x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:27:55
+mode=compare
+profile=small
+threads=8
+max_depth=0
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 1860.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[MANUAL]
+Elapsed: 4375.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[COMPARISON]
+Threaded time: 1860.00 ms
+Manual time: 4375.00 ms
+Speedup (manual/threaded): 2.35x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:28:04
+mode=compare
+profile=small
+threads=1
+max_depth=0
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 4062.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[MANUAL]
+Elapsed: 4375.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[COMPARISON]
+Threaded time: 4062.00 ms
+Manual time: 4375.00 ms
+Speedup (manual/threaded): 1.08x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:28:11
+mode=compare
+profile=small
+threads=2
+max_depth=0
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 3046.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[MANUAL]
+Elapsed: 4266.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[COMPARISON]
+Threaded time: 3046.00 ms
+Manual time: 4266.00 ms
+Speedup (manual/threaded): 1.40x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:28:17
+mode=compare
+profile=small
+threads=4
+max_depth=0
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 2063.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[MANUAL]
+Elapsed: 4157.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[COMPARISON]
+Threaded time: 2063.00 ms
+Manual time: 4157.00 ms
+Speedup (manual/threaded): 2.02x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:28:23
+mode=compare
+profile=small
+threads=8
+max_depth=0
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 1656.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+[MANUAL]
+Elapsed: 3969.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 693
+Graph edges: 691
+
+[COMPARISON]
+Threaded time: 1656.00 ms
+Manual time: 3969.00 ms
+Speedup (manual/threaded): 2.40x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:28:48
+mode=compare
+profile=small
+threads=1
+max_depth=1
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 12437.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1208
+Graph edges: 1224
+
+[MANUAL]
+Elapsed: 11890.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1243
+Graph edges: 1261
+
+[COMPARISON]
+Threaded time: 12437.00 ms
+Manual time: 11890.00 ms
+Speedup (manual/threaded): 0.96x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:29:10
+mode=compare
+profile=small
+threads=2
+max_depth=1
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 6547.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1243
+Graph edges: 1261
+
+[MANUAL]
+Elapsed: 15766.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1074
+Graph edges: 1090
+
+[COMPARISON]
+Threaded time: 6547.00 ms
+Manual time: 15766.00 ms
+Speedup (manual/threaded): 2.41x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:29:25
+mode=compare
+profile=small
+threads=4
+max_depth=1
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 3485.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1074
+Graph edges: 1090
+
+[MANUAL]
+Elapsed: 11765.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1243
+Graph edges: 1261
+
+[COMPARISON]
+Threaded time: 3485.00 ms
+Manual time: 11765.00 ms
+Speedup (manual/threaded): 3.38x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:29:43
+mode=compare
+profile=small
+threads=8
+max_depth=1
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 2453.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1208
+Graph edges: 1224
+
+[MANUAL]
+Elapsed: 15281.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1026
+Graph edges: 1114
+
+[COMPARISON]
+Threaded time: 2453.00 ms
+Manual time: 15281.00 ms
+Speedup (manual/threaded): 6.23x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:32:57
+mode=compare
+profile=small
+threads=1
+max_depth=1
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 103500.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 3295
+Graph edges: 8968
+
+[MANUAL]
+Elapsed: 90047.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 4014
+Graph edges: 5802
+
+[COMPARISON]
+Threaded time: 103500.00 ms
+Manual time: 90047.00 ms
+Speedup (manual/threaded): 0.87x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:35:19
+mode=compare
+profile=small
+threads=2
+max_depth=1
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 46703.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 3295
+Graph edges: 8968
+
+[MANUAL]
+Elapsed: 95453.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 3294
+Graph edges: 8967
+
+[COMPARISON]
+Threaded time: 46703.00 ms
+Manual time: 95453.00 ms
+Speedup (manual/threaded): 2.04x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:37:08
+mode=compare
+profile=small
+threads=4
+max_depth=1
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 30438.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 3294
+Graph edges: 8967
+
+[MANUAL]
+Elapsed: 78656.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 3881
+Graph edges: 5668
+
+[COMPARISON]
+Threaded time: 30438.00 ms
+Manual time: 78656.00 ms
+Speedup (manual/threaded): 2.58x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:39:12
+mode=compare
+profile=small
+threads=8
+max_depth=1
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 21235.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 7166
+Graph edges: 15740
+
+[MANUAL]
+Elapsed: 102718.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 3295
+Graph edges: 8968
+
+[COMPARISON]
+Threaded time: 21235.00 ms
+Manual time: 102718.00 ms
+Speedup (manual/threaded): 4.84x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:40:33
+mode=compare
+profile=large
+threads=1
+max_depth=0
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 42297.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3258
+Graph edges: 3385
+
+[MANUAL]
+Elapsed: 38047.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3303
+Graph edges: 3438
+
+[COMPARISON]
+Threaded time: 42297.00 ms
+Manual time: 38047.00 ms
+Speedup (manual/threaded): 0.90x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:41:32
+mode=compare
+profile=large
+threads=2
+max_depth=0
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 20235.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3308
+Graph edges: 3438
+
+[MANUAL]
+Elapsed: 38296.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3304
+Graph edges: 3438
+
+[COMPARISON]
+Threaded time: 20235.00 ms
+Manual time: 38296.00 ms
+Speedup (manual/threaded): 1.89x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:42:26
+mode=compare
+profile=large
+threads=4
+max_depth=0
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 13297.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3303
+Graph edges: 3438
+
+[MANUAL]
+Elapsed: 40844.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3179
+Graph edges: 3305
+
+[COMPARISON]
+Threaded time: 13297.00 ms
+Manual time: 40844.00 ms
+Speedup (manual/threaded): 3.07x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:43:21
+mode=compare
+profile=large
+threads=8
+max_depth=0
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 11625.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3305
+Graph edges: 3439
+
+[MANUAL]
+Elapsed: 43625.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3303
+Graph edges: 3438
+
+[COMPARISON]
+Threaded time: 11625.00 ms
+Manual time: 43625.00 ms
+Speedup (manual/threaded): 3.75x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:45:55
+mode=compare
+profile=large
+threads=1
+max_depth=0
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 80156.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6889
+Graph edges: 7232
+
+[MANUAL]
+Elapsed: 73781.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6932
+Graph edges: 7281
+
+[COMPARISON]
+Threaded time: 80156.00 ms
+Manual time: 73781.00 ms
+Speedup (manual/threaded): 0.92x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:47:46
+mode=compare
+profile=large
+threads=2
+max_depth=0
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 41171.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6892
+Graph edges: 7232
+
+[MANUAL]
+Elapsed: 69609.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6886
+Graph edges: 7232
+
+[COMPARISON]
+Threaded time: 41171.00 ms
+Manual time: 69609.00 ms
+Speedup (manual/threaded): 1.69x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:49:27
+mode=compare
+profile=large
+threads=4
+max_depth=0
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 20844.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6889
+Graph edges: 7231
+
+[MANUAL]
+Elapsed: 79735.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6890
+Graph edges: 7230
+
+[COMPARISON]
+Threaded time: 20844.00 ms
+Manual time: 79735.00 ms
+Speedup (manual/threaded): 3.83x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:50:57
+mode=compare
+profile=large
+threads=8
+max_depth=0
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 13141.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6889
+Graph edges: 7230
+
+[MANUAL]
+Elapsed: 77047.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6888
+Graph edges: 7231
+
+[COMPARISON]
+Threaded time: 13141.00 ms
+Manual time: 77047.00 ms
+Speedup (manual/threaded): 5.86x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:52:19
+mode=compare
+profile=large
+threads=1
+max_depth=1
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 40062.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3304
+Graph edges: 3436
+
+[MANUAL]
+Elapsed: 41016.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3301
+Graph edges: 3436
+
+[COMPARISON]
+Threaded time: 40062.00 ms
+Manual time: 41016.00 ms
+Speedup (manual/threaded): 1.02x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:53:25
+mode=compare
+profile=large
+threads=2
+max_depth=1
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 24453.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3302
+Graph edges: 3438
+
+[MANUAL]
+Elapsed: 41593.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3302
+Graph edges: 3438
+
+[COMPARISON]
+Threaded time: 24453.00 ms
+Manual time: 41593.00 ms
+Speedup (manual/threaded): 1.70x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:54:17
+mode=compare
+profile=large
+threads=4
+max_depth=1
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 12875.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3298
+Graph edges: 3437
+
+[MANUAL]
+Elapsed: 38922.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3305
+Graph edges: 3437
+
+[COMPARISON]
+Threaded time: 12875.00 ms
+Manual time: 38922.00 ms
+Speedup (manual/threaded): 3.02x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:55:12
+mode=compare
+profile=large
+threads=8
+max_depth=1
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 12891.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3304
+Graph edges: 3438
+
+[MANUAL]
+Elapsed: 41781.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3305
+Graph edges: 3438
+
+[COMPARISON]
+Threaded time: 12891.00 ms
+Manual time: 41781.00 ms
+Speedup (manual/threaded): 3.24x
+
+------------------------------------------------------------
+timestamp=2026-03-26 00:59:18
+mode=compare
+profile=large
+threads=1
+max_depth=1
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 139359.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9035
+Graph edges: 10206
+
+[MANUAL]
+Elapsed: 105547.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9090
+Graph edges: 10271
+
+[COMPARISON]
+Threaded time: 139359.00 ms
+Manual time: 105547.00 ms
+Speedup (manual/threaded): 0.76x
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:02:10
+mode=compare
+profile=large
+threads=2
+max_depth=1
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 58281.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9090
+Graph edges: 10273
+
+[MANUAL]
+Elapsed: 114109.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9089
+Graph edges: 10273
+
+[COMPARISON]
+Threaded time: 58281.00 ms
+Manual time: 114109.00 ms
+Speedup (manual/threaded): 1.96x
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:04:39
+mode=compare
+profile=large
+threads=4
+max_depth=1
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 38016.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9653
+Graph edges: 11110
+
+[MANUAL]
+Elapsed: 110609.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9004
+Graph edges: 10190
+
+[COMPARISON]
+Threaded time: 38016.00 ms
+Manual time: 110609.00 ms
+Speedup (manual/threaded): 2.91x
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:07:28
+mode=compare
+profile=large
+threads=8
+max_depth=1
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 50797.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9632
+Graph edges: 11427
+
+[MANUAL]
+Elapsed: 117203.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9089
+Graph edges: 10272
+
+[COMPARISON]
+Threaded time: 50797.00 ms
+Manual time: 117203.00 ms
+Speedup (manual/threaded): 2.31x
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:07:33
+mode=threaded
+profile=small
+threads=1
+max_depth=0
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 5390.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:07:37
+mode=threaded
+profile=small
+threads=2
+max_depth=0
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 3063.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:07:39
+mode=threaded
+profile=small
+threads=4
+max_depth=0
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 2109.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:07:41
+mode=threaded
+profile=small
+threads=8
+max_depth=0
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 1875.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:07:46
+mode=threaded
+profile=small
+threads=1
+max_depth=0
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 4343.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:07:49
+mode=threaded
+profile=small
+threads=2
+max_depth=0
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 3063.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:07:51
+mode=threaded
+profile=small
+threads=4
+max_depth=0
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 2063.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:07:54
+mode=threaded
+profile=small
+threads=8
+max_depth=0
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 1984.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:08:08
+mode=threaded
+profile=small
+threads=1
+max_depth=1
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 14437.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1208
+Graph edges: 1224
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:08:18
+mode=threaded
+profile=small
+threads=2
+max_depth=1
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 9234.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1243
+Graph edges: 1261
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:08:23
+mode=threaded
+profile=small
+threads=4
+max_depth=1
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 5156.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1208
+Graph edges: 1224
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:08:26
+mode=threaded
+profile=small
+threads=8
+max_depth=1
+max_pages=50
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 2359.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:10:34
+mode=threaded
+profile=small
+threads=1
+max_depth=1
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 128547.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 3982
+Graph edges: 5765
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:11:24
+mode=threaded
+profile=small
+threads=2
+max_depth=1
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 49609.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 4014
+Graph edges: 5802
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:11:59
+mode=threaded
+profile=small
+threads=4
+max_depth=1
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 34172.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 4481
+Graph edges: 9679
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:12:17
+mode=threaded
+profile=small
+threads=8
+max_depth=1
+max_pages=500
+seed_hash=11731404830899694292
+
+[THREADED]
+Elapsed: 18016.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 4840
+Graph edges: 12584
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:13:01
+mode=threaded
+profile=large
+threads=1
+max_depth=0
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 43766.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3226
+Graph edges: 3358
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:13:22
+mode=threaded
+profile=large
+threads=2
+max_depth=0
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 20703.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3310
+Graph edges: 3441
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:13:36
+mode=threaded
+profile=large
+threads=4
+max_depth=0
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 13750.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3305
+Graph edges: 3440
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:13:48
+mode=threaded
+profile=large
+threads=8
+max_depth=0
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 12313.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3308
+Graph edges: 3440
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:15:08
+mode=threaded
+profile=large
+threads=1
+max_depth=0
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 79750.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6895
+Graph edges: 7237
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:15:46
+mode=threaded
+profile=large
+threads=2
+max_depth=0
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 37422.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6895
+Graph edges: 7237
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:16:08
+mode=threaded
+profile=large
+threads=4
+max_depth=0
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 21734.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6895
+Graph edges: 7238
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:16:21
+mode=threaded
+profile=large
+threads=8
+max_depth=0
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 13078.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6897
+Graph edges: 7240
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:17:02
+mode=threaded
+profile=large
+threads=1
+max_depth=1
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 41171.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3224
+Graph edges: 3357
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:17:23
+mode=threaded
+profile=large
+threads=2
+max_depth=1
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 20094.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3308
+Graph edges: 3437
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:17:37
+mode=threaded
+profile=large
+threads=4
+max_depth=1
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 13688.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3305
+Graph edges: 3437
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:17:48
+mode=threaded
+profile=large
+threads=8
+max_depth=1
+max_pages=50
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 11468.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3307
+Graph edges: 3439
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:19:36
+mode=threaded
+profile=large
+threads=1
+max_depth=1
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 107875.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9261
+Graph edges: 10443
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:20:37
+mode=threaded
+profile=large
+threads=2
+max_depth=1
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 60297.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9092
+Graph edges: 10273
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:21:12
+mode=threaded
+profile=large
+threads=4
+max_depth=1
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 35328.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9660
+Graph edges: 11115
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:22:06
+mode=threaded
+profile=large
+threads=8
+max_depth=1
+max_pages=500
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 52953.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 8976
+Graph edges: 10505
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:22:10
+mode=manual
+profile=small
+threads=1
+max_depth=0
+max_pages=50
+seed_hash=11731404830899694292
+
+[MANUAL]
+Elapsed: 4328.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:22:15
+mode=manual
+profile=small
+threads=1
+max_depth=0
+max_pages=500
+seed_hash=11731404830899694292
+
+[MANUAL]
+Elapsed: 4219.00 ms
+Seeds added: 8
+Discovered: 8
+Fetched: 8
+Graph nodes: 825
+Graph edges: 823
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:22:34
+mode=manual
+profile=small
+threads=1
+max_depth=1
+max_pages=50
+seed_hash=11731404830899694292
+
+[MANUAL]
+Elapsed: 19016.00 ms
+Seeds added: 8
+Discovered: 50
+Fetched: 50
+Graph nodes: 1208
+Graph edges: 1224
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:24:12
+mode=manual
+profile=small
+threads=1
+max_depth=1
+max_pages=500
+seed_hash=11731404830899694292
+
+[MANUAL]
+Elapsed: 97704.00 ms
+Seeds added: 8
+Discovered: 500
+Fetched: 500
+Graph nodes: 4014
+Graph edges: 5802
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:24:55
+mode=manual
+profile=large
+threads=1
+max_depth=0
+max_pages=50
+seed_hash=418818369127468153
+
+[MANUAL]
+Elapsed: 42625.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3316
+Graph edges: 3447
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:26:33
+mode=manual
+profile=large
+threads=1
+max_depth=0
+max_pages=500
+seed_hash=418818369127468153
+
+[MANUAL]
+Elapsed: 97750.00 ms
+Seeds added: 105
+Discovered: 105
+Fetched: 105
+Graph nodes: 6728
+Graph edges: 7063
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:27:28
+mode=manual
+profile=large
+threads=1
+max_depth=1
+max_pages=50
+seed_hash=418818369127468153
+
+[MANUAL]
+Elapsed: 55547.00 ms
+Seeds added: 50
+Discovered: 50
+Fetched: 50
+Graph nodes: 3318
+Graph edges: 3449
+
+------------------------------------------------------------
+timestamp=2026-03-26 01:29:12
+mode=manual
+profile=large
+threads=1
+max_depth=1
+max_pages=500
+seed_hash=418818369127468153
+
+[MANUAL]
+Elapsed: 103015.00 ms
+Seeds added: 105
+Discovered: 500
+Fetched: 500
+Graph nodes: 9107
+Graph edges: 10287
+

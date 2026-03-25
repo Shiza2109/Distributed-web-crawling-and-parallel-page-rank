@@ -4,8 +4,8 @@ CFLAGS = -Wall -Wextra -pthread
 LDFLAGS = -lpthread -lcurl
 
 # Source files
-SOURCES = graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c
-HEADERS = graph.h frontier.h crawl_policy.h fetch.h worker.h parser.h
+SOURCES = graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c manual_worker.c reproducibility.c
+HEADERS = graph.h frontier.h crawl_policy.h fetch.h worker.h parser.h manual_worker.h reproducibility.h
 
 # Test executables
 TESTS = test_ibrahim.exe test_duplicate.exe test_integration.exe
@@ -21,8 +21,8 @@ test_duplicate.exe: test_duplicate.c frontier.c crawl_policy.c
 	$(CC) $(CFLAGS) -o $@ test_duplicate.c frontier.c crawl_policy.c $(LDFLAGS)
 
 # Complete integration test
-test_integration.exe: test_integration.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c
-	$(CC) $(CFLAGS) -o $@ test_integration.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c $(LDFLAGS)
+test_integration.exe: test_integration.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c manual_worker.c reproducibility.c
+	$(CC) $(CFLAGS) -o $@ test_integration.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c manual_worker.c reproducibility.c $(LDFLAGS)
 
 # Clean
 clean:

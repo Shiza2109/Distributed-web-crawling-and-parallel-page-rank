@@ -94,7 +94,8 @@ int frontier_pop(Frontier *fr, char *url, int *depth);
 void frontier_mark_fetched(Frontier *fr, const char *url, 
                            FetchOutcome outcome, 
                            const char *redirect_url, 
-                           int http_code);
+                           int http_code,
+                           int current_depth);
 void frontier_shutdown(Frontier *fr);
 void frontier_destroy(Frontier *fr);
 

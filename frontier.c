@@ -316,7 +316,8 @@ int frontier_pop(Frontier *fr, char *url, int *depth) {
 void frontier_mark_fetched(Frontier *fr, const char *url, 
                            FetchOutcome outcome, 
                            const char *redirect_url, 
-                           int http_code) {
+                           int http_code,
+                           int current_depth) {
     pthread_mutex_lock(&fr->url_table.lock);
     int idx = find_url_in_table(fr, url);
     if (idx >= 0) {
@@ -332,9 +333,8 @@ void frontier_mark_fetched(Frontier *fr, const char *url,
     
     /* Handle redirect */
     if (outcome == FETCH_REDIRECT && redirect_url && redirect_url[0]) {
-        int current_depth;
-        /* Get depth from queue (simplified - you may want to track depth per URL) */
-        frontier_push(fr, redirect_url, 0);
+        /* Keep redirects at the same crawl depth as the source URL. */
+        frontier_push(fr, redirect_url, current_depth);
     }
 }
 

@@ -17,6 +17,10 @@ typedef struct {
     uint64_t total_nodes;
     uint64_t total_edges;
     uint64_t pages_fetched;
+    uint64_t pages_discovered;
+    uint64_t duplicates_filtered;
+    int seeds_added;
+    double elapsed_ms;
     
     // Timestamp and hash
     char timestamp[64];

@@ -45,13 +45,7 @@ int main() {
     
     frontier_destroy(&frontier);
     
-    /* Free policy */
-    if (policy) {
-        if (policy->allowed_domains) free(policy->allowed_domains);
-        if (policy->seed_domains) free(policy->seed_domains);
-        pthread_mutex_destroy(&policy->lock);
-        free(policy);
-    }
+    policy_destroy(policy);
     
     printf("\n=== Test Complete ===\n");
     return 0;

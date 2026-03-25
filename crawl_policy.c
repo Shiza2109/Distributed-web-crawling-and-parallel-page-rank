@@ -2,6 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
+
+static void to_lower_in_place(char *s) {
+    if (!s) return;
+    while (*s) {
+        *s = (char)tolower((unsigned char)*s);
+        s++;
+    }
+}
 
 CrawlPolicy* policy_create(int max_depth, uint64_t max_pages, int same_domain_only) {
     CrawlPolicy *policy = malloc(sizeof(CrawlPolicy));
@@ -35,10 +44,16 @@ void policy_set_seed_domains(CrawlPolicy *policy, char **seed_urls, int num_seed
     
     /* Allocate and copy new seeds */
     policy->seed_domains = malloc(num_seeds * sizeof(char*));
-    if (!policy->seed_domains) return;
+    if (!policy->seed_domains) {
+        policy->num_seed_domains = 0;
+        return;
+    }
     
     for (int i = 0; i < num_seeds; i++) {
-        policy->seed_domains[i] = strdup(seed_urls[i]);
+        char domain[256];
+        policy_extract_domain(seed_urls[i], domain, sizeof(domain));
+        to_lower_in_place(domain);
+        policy->seed_domains[i] = strdup(domain);
     }
     policy->num_seed_domains = num_seeds;
 }
@@ -55,6 +70,7 @@ int policy_is_url_allowed(CrawlPolicy *policy, const char *url, int current_dept
     if (policy->same_domain_only && policy->num_seed_domains > 0) {
         char domain[256];
         policy_extract_domain(url, domain, sizeof(domain));
+        to_lower_in_place(domain);
         
         /* Check if domain matches any seed domain */
         for (int i = 0; i < policy->num_seed_domains; i++) {

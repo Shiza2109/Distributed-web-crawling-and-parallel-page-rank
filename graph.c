@@ -54,7 +54,7 @@ int graph_add_node(Graph* g, const char* url) {
     
     // Check if exists (linear search for now)
     for (int i = 0; i < g->node_count; i++) {
-        if (strcmp(g->nodes[i].url, url) == 0) {
+        if (strcasecmp(g->nodes[i].url, url) == 0) {
             pthread_rwlock_unlock(&g->lock);
             return i;
         }
@@ -142,7 +142,7 @@ int graph_get_node_id(void *graph, const char *url) {
     pthread_rwlock_rdlock(&g->lock);
     
     for (int i = 0; i < g->node_count; i++) {
-        if (strcmp(g->nodes[i].url, url) == 0) {
+        if (strcasecmp(g->nodes[i].url, url) == 0) {
             pthread_rwlock_unlock(&g->lock);
             return i;
         }
