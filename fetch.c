@@ -97,7 +97,6 @@ void fetch_url(const char *url, const char *user_agent, FetchResult *result) {
     CURL *curl = curl_easy_init();
     if (!curl) {
         result->outcome = FETCH_ERROR;
-        fprintf(stderr, "[fetch] curl_easy_init failed for %s\n", url);
         return;
     }
 
@@ -155,7 +154,6 @@ void fetch_url(const char *url, const char *user_agent, FetchResult *result) {
     if (res == CURLE_OPERATION_TIMEDOUT || res == CURLE_COULDNT_CONNECT) {
         result->outcome = FETCH_TIMEOUT;
         free(body.buf);
-        fprintf(stderr, "[fetch] timeout: %s\n", url);
         return;
     }
     if (res != CURLE_OK && res != CURLE_WRITE_ERROR) {
@@ -163,8 +161,6 @@ void fetch_url(const char *url, const char *user_agent, FetchResult *result) {
            that's intentional, treat it as a truncated-but-ok response      */
         result->outcome = FETCH_ERROR;
         free(body.buf);
-        fprintf(stderr, "[fetch] curl error %d: %s  url=%s\n",
-                res, curl_easy_strerror(res), url);
         return;
     }
 

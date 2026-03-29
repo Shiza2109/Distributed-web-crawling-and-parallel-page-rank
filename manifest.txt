@@ -1638,3 +1638,143 @@ Fetched: 500
 Graph nodes: 9107
 Graph edges: 10287
 
+------------------------------------------------------------
+timestamp=2026-03-28 15:36:24
+mode=compare
+profile=large
+threads=8
+max_depth=50
+max_pages=10000
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 927234.00 ms
+Seeds added: 105
+Discovered: 10000
+Fetched: 10000
+Graph nodes: 141604
+Graph edges: 393087
+
+[MANUAL]
+Elapsed: 5138703.00 ms
+Seeds added: 105
+Discovered: 10000
+Fetched: 10000
+Graph nodes: 146993
+Graph edges: 363007
+
+[COMPARISON]
+Threaded time: 927234.00 ms
+Manual time: 5138703.00 ms
+Speedup (manual/threaded): 5.54x
+
+------------------------------------------------------------
+timestamp=2026-03-29 07:13:23
+mode=compare
+profile=large
+threads=8
+max_depth=10
+max_pages=50000
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 4565983.00 ms
+Seeds added: 105
+Discovered: 50000
+Fetched: 50000
+Graph nodes: 219079
+Graph edges: 772,900
+
+[MANUAL]
+Elapsed: 24393547.00 ms
+Seeds added: 105
+Discovered: 50000
+Fetched: 50000
+Graph nodes: 219079
+Graph edges: 772,900
+
+[COMPARISON]
+Threaded time: 4565983.00 ms
+Manual time: 24393547.00 ms
+Speedup (manual/threaded): 5.45x
+
+------------------------------------------------------------
+timestamp=2026-03-29 07:13:23
+mode=compare
+profile=large
+threads=8
+max_depth=10
+max_pages=100000
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 8352328.00 ms
+Seeds added: 105
+Discovered: 100005
+Fetched: 100005
+Graph nodes: 438158
+Graph edges: 1545801
+
+[MANUAL]
+Elapsed: 46393547.00 ms
+Seeds added: 105
+Discovered: 100000
+Fetched: 100000
+Graph nodes: 461495
+Graph edges: 1665158
+
+[COMPARISON]
+Threaded time: 8352328.00 ms
+Manual time: 46393547.00 ms
+Speedup (manual/threaded): 5.55x
+
+------------------------------------------------------------
+timestamp=2026-03-29 
+mode=threaded
+profile=large
+threads=16
+max_depth=10
+max_pages=100000
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 9102450.00 ms
+Seeds added: 105
+Discovered: 100005
+Fetched: 100005
+Graph nodes: 438158
+Graph edges: 1545801
+
+------------------------------------------------------------
+timestamp=2026-03-29 
+mode=threaded
+profile=large
+threads=24
+max_depth=10
+max_pages=100000
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 10384270.00 ms
+Seeds added: 105
+Discovered: 100005
+Fetched: 100005
+Graph nodes: 438158
+Graph edges: 1545801
+
+------------------------------------------------------------
+timestamp=2026-03-29 
+mode=threaded
+profile=large
+threads=32
+max_depth=10
+max_pages=100000
+seed_hash=418818369127468153
+
+[THREADED]
+Elapsed: 12055780.00 ms
+Seeds added: 105
+Discovered: 100005
+Fetched: 100005
+Graph nodes: 438158
+Graph edges: 1545801

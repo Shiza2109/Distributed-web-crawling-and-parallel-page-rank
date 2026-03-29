@@ -29,11 +29,7 @@ static void *worker_thread(void *arg) {
     // User agent string
     const char *user_agent = "Web-Crawler";
 
-    printf("[Worker %d] started\n", w->worker_id);
-
     while (frontier_pop(w->frontier, url, &depth)) {
-
-        printf("[Worker %d] depth=%d  %s\n", w->worker_id, depth, url);
 
         /* ── 1. fetch ── */
         fetch_url(url, user_agent, &result);
@@ -51,15 +47,6 @@ static void *worker_thread(void *arg) {
 
         /* ── 3. skip / error — report and move on ── */
         if (result.outcome != FETCH_OK) {
-            fprintf(stderr, "[Worker %d] %s  http=%d  url=%s\n",
-                    w->worker_id,
-                    result.outcome == FETCH_TIMEOUT      ? "TIMEOUT"  :
-                    result.outcome == FETCH_NOT_FOUND    ? "404"      :
-                    result.outcome == FETCH_FORBIDDEN    ? "403"      :
-                    result.outcome == FETCH_GONE         ? "410"      :
-                    result.outcome == FETCH_SERVER_ERROR ? "5xx"      :
-                    result.outcome == FETCH_CONTENT_SKIP ? "NON-HTML" : "ERROR",
-                    result.http_code, url);
             frontier_mark_fetched(w->frontier, url,
                                   result.outcome, NULL, result.http_code,
                                   depth);
@@ -95,7 +82,6 @@ static void *worker_thread(void *arg) {
         fetch_result_free(&result);
     }
 
-    printf("[Worker %d] done\n", w->worker_id);
     return NULL;
 }
 
@@ -120,8 +106,6 @@ int worker_pool_start(WorkerPool *pool,
         int rc = pthread_create(&pool->threads[i], NULL,
                                  worker_thread, &pool->args[i]);
         if (rc != 0) {
-            fprintf(stderr, "[pool] pthread_create failed for worker %d: %d\n",
-                    i, rc);
             // signal already-running workers to stop 
             frontier_shutdown(frontier);
             // join the ones that started 
@@ -131,12 +115,10 @@ int worker_pool_start(WorkerPool *pool,
         }
     }
 
-    printf("[Pool] %d workers started\n", n_threads);
     return 0;
 }
 
 void worker_pool_join(WorkerPool *pool) {
     for (int i = 0; i < pool->n_threads; i++)
         pthread_join(pool->threads[i], NULL);
-    printf("[Pool] all workers joined\n");
 }

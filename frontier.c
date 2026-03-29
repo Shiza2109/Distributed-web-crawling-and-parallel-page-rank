@@ -175,8 +175,6 @@ void frontier_init(Frontier *fr, CrawlPolicy *policy) {
     pthread_mutex_init(&fr->lock, NULL);
     pthread_cond_init(&fr->not_empty, NULL);
     pthread_mutex_init(&fr->url_table.lock, NULL);
-    
-    printf("[Frontier] Initialized with duplicate filtering\n");
 }
 
 /* Check if URL is a duplicate */
@@ -210,7 +208,6 @@ int frontier_push(Frontier *fr, const char *url, int depth) {
     
     /* DUPLICATE FILTERING: Check if URL already seen */
     if (frontier_is_duplicate(fr, url)) {
-        printf("[Frontier] Skipping duplicate: %s\n", url);
         return 0;
     }
     
@@ -264,18 +261,11 @@ int frontier_push(Frontier *fr, const char *url, int depth) {
 int frontier_push_links(Frontier *fr, char urls[][FR_MAX_URL_LEN], 
                         int count, const char *parent_url, int depth) {
     int added = 0;
-    int duplicates_filtered = 0;
     
     for (int i = 0; i < count; i++) {
         if (frontier_push(fr, urls[i], depth)) {
             added++;
-        } else {
-            duplicates_filtered++;
         }
-    }
-    
-    if (duplicates_filtered > 0) {
-        printf("[Frontier] Filtered %d duplicate URLs\n", duplicates_filtered);
     }
     
     return added;
@@ -365,8 +355,4 @@ void frontier_destroy(Frontier *fr) {
     pthread_mutex_destroy(&fr->lock);
     pthread_cond_destroy(&fr->not_empty);
     pthread_mutex_destroy(&fr->url_table.lock);
-    
-    printf("[Frontier] Destroyed - Total discovered: %lu, Duplicates filtered: %lu\n",
-           fr->total_discovered, 
-           fr->total_discovered - fr->total_fetched);
 }
