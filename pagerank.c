@@ -1,10 +1,9 @@
-/* pagerank.c - Corrected parallel PageRank */
+/* pagerank.c - Sequential PageRank only */
 #include "pagerank.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <pthread.h>
 #include <float.h>
 
 /* ============================================================
@@ -28,6 +27,9 @@ PageRankGraph* pagerank_load_graph(const char *filename) {
     int num_nodes = 0;
     int max_node_id = -1;
     
+    printf("[PageRank] First pass: counting nodes...\n");
+    fflush(stdout);
+    
     /* First pass: count nodes and find max node ID */
     while (fgets(line, sizeof(line), f)) {
         if (line[0] == '#') continue;
@@ -38,9 +40,18 @@ PageRankGraph* pagerank_load_graph(const char *filename) {
         int node_id = atoi(line);
         if (node_id > max_node_id) max_node_id = node_id;
         num_nodes++;
+        
+        /* Progress indicator for large files */
+        if (num_nodes % 100000 == 0) {
+            printf("[PageRank]   ... %d nodes found\n", num_nodes);
+            fflush(stdout);
+        }
     }
     
     pg->num_nodes = max_node_id + 1;
+    printf("[PageRank] Total nodes: %d (max ID: %d)\n", pg->num_nodes, max_node_id);
+    printf("[PageRank] Second pass: loading edges...\n");
+    fflush(stdout);
     
     /* Allocate adjacency lists */
     pg->outlink_counts = calloc(pg->num_nodes, sizeof(int));
@@ -62,6 +73,7 @@ PageRankGraph* pagerank_load_graph(const char *filename) {
     /* Second pass: read edges */
     rewind(f);
     
+    int nodes_processed = 0;
     while (fgets(line, sizeof(line), f)) {
         if (line[0] == '#') continue;
         
@@ -83,6 +95,12 @@ PageRankGraph* pagerank_load_graph(const char *filename) {
         }
         
         pg->outlink_counts[node_id] = outlink_count;
+        nodes_processed++;
+        
+        if (nodes_processed % 100000 == 0) {
+            printf("[PageRank]   ... processed %d nodes\n", nodes_processed);
+            fflush(stdout);
+        }
         
         if (outlink_count > 0) {
             pg->outlinks[node_id] = malloc(outlink_count * sizeof(int));
@@ -102,43 +120,52 @@ PageRankGraph* pagerank_load_graph(const char *filename) {
                 pg->outlinks[node_id][idx++] = atoi(token);
                 token = strtok_r(NULL, ",", &saveptr);
             }
-        } else {
-            pg->outlinks[node_id] = NULL;
         }
     }
     
     fclose(f);
     
-    printf("[PageRank] Loaded graph: %d nodes\n", pg->num_nodes);
     int total_edges = 0;
     for (int i = 0; i < pg->num_nodes; i++) {
         total_edges += pg->outlink_counts[i];
     }
-    printf("[PageRank] Total edges: %d\n", total_edges);
+    
+    printf("[PageRank] Loaded graph: %d nodes, %d edges\n", pg->num_nodes, total_edges);
+    fflush(stdout);
     
     return pg;
 }
 
 /* ============================================================
-   Sequential PageRank
+   Sequential PageRank with Progress Indicators
    ============================================================ */
 
-void pagerank_compute_sequential(PageRankGraph *pg) {
+void pagerank_compute(PageRankGraph *pg) {
     if (!pg) return;
     
     int N = pg->num_nodes;
     double damping = DAMPING_FACTOR;
     double teleport = (1.0 - damping) / N;
     
+    printf("[PageRank] Starting iterations\n");
+    printf("  Nodes: %d\n", N);
+    printf("  Damping: %.2f\n", damping);
+    printf("  Threshold: %.0e\n", CONVERGENCE_THRESHOLD);
+    printf("  Max iterations: %d\n", MAX_ITERATIONS);
+    fflush(stdout);
+    
     /* Initialize ranks to 1/N */
+    printf("[PageRank] Initializing ranks...\n");
+    fflush(stdout);
+    
     double init_rank = 1.0 / N;
     for (int i = 0; i < N; i++) {
         pg->ranks[i] = init_rank;
         pg->new_ranks[i] = 0.0;
     }
     
-    printf("[PageRank] Sequential: Starting iterations (N=%d, damping=%.2f, threshold=%.0e)\n",
-           N, damping, CONVERGENCE_THRESHOLD);
+    time_t start_time = time(NULL);
+    time_t last_report = start_time;
     
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
         /* Reset new_ranks to teleportation component */
@@ -172,186 +199,31 @@ void pagerank_compute_sequential(PageRankGraph *pg) {
             pg->ranks[i] = pg->new_ranks[i];
         }
         
-        if (iter % 10 == 0 || iter == MAX_ITERATIONS - 1) {
-            printf("[PageRank] Iteration %d: L1 diff = %.6e\n", iter + 1, diff);
+        /* Progress report every 5 iterations or every 30 seconds */
+        time_t now = time(NULL);
+        int should_report = (iter % 5 == 0) || (now - last_report >= 30);
+        
+        if (should_report) {
+            double elapsed = difftime(now, start_time);
+            printf("[PageRank] Iter %4d: L1 diff = %.6e (elapsed: %.0f sec)\n", 
+                   iter + 1, diff, elapsed);
+            fflush(stdout);
+            last_report = now;
         }
         
         if (diff < CONVERGENCE_THRESHOLD) {
-            printf("[PageRank] Converged after %d iterations\n", iter + 1);
-            break;
-        }
-    }
-}
-
-/* ============================================================
-   Parallel PageRank - Thread Arguments (FIXED)
-   ============================================================ */
-
-typedef struct {
-    PageRankGraph *pg;
-    int start_node;
-    int end_node;
-    double teleport;
-    double damping;
-    int N;
-    pthread_mutex_t *node_mutexes;  /* Proper pointer to mutex array */
-} PRThreadArgs;
-
-/* Phase 1: Reset new_ranks for assigned nodes */
-static void* reset_ranks_worker(void *arg) {
-    PRThreadArgs *args = (PRThreadArgs*)arg;
-    PageRankGraph *pg = args->pg;
-    double teleport = args->teleport;
-    
-    for (int i = args->start_node; i < args->end_node; i++) {
-        pg->new_ranks[i] = teleport;
-    }
-    
-    return NULL;
-}
-
-/* Phase 2: Distribute ranks from assigned nodes */
-static void* distribute_ranks_worker(void *arg) {
-    PRThreadArgs *args = (PRThreadArgs*)arg;
-    PageRankGraph *pg = args->pg;
-    int N = args->N;
-    double damping = args->damping;
-    pthread_mutex_t *node_mutexes = args->node_mutexes;
-    
-    for (int i = args->start_node; i < args->end_node; i++) {
-        double rank_contrib = damping * pg->ranks[i];
-        
-        if (pg->outlink_counts[i] > 0) {
-            double share = rank_contrib / pg->outlink_counts[i];
-            for (int j = 0; j < pg->outlink_counts[i]; j++) {
-                int target = pg->outlinks[i][j];
-                
-                /* Lock mutex for target node */
-                pthread_mutex_lock(&node_mutexes[target]);
-                pg->new_ranks[target] += share;
-                pthread_mutex_unlock(&node_mutexes[target]);
-            }
-        } else {
-            /* Dangling page: distribute to all nodes */
-            double share = rank_contrib / N;
-            for (int j = 0; j < N; j++) {
-                pthread_mutex_lock(&node_mutexes[j]);
-                pg->new_ranks[j] += share;
-                pthread_mutex_unlock(&node_mutexes[j]);
-            }
-        }
-    }
-    
-    return NULL;
-}
-
-void pagerank_compute_parallel(PageRankGraph *pg, int num_threads) {
-    if (!pg || num_threads <= 0) return;
-    
-    int N = pg->num_nodes;
-    double damping = DAMPING_FACTOR;
-    double teleport = (1.0 - damping) / N;
-    
-    /* Initialize ranks */
-    double init_rank = 1.0 / N;
-    for (int i = 0; i < N; i++) {
-        pg->ranks[i] = init_rank;
-        pg->new_ranks[i] = 0.0;
-    }
-    
-    printf("[PageRank] Parallel: Starting with %d threads (N=%d, damping=%.2f)\n",
-           num_threads, N, damping);
-    
-    /* Create mutexes for each node (for thread-safe rank updates) */
-    pthread_mutex_t *node_mutexes = malloc(N * sizeof(pthread_mutex_t));
-    for (int i = 0; i < N; i++) {
-        pthread_mutex_init(&node_mutexes[i], NULL);
-    }
-    
-    /* Calculate node distribution among threads */
-    int nodes_per_thread = (N + num_threads - 1) / num_threads;
-    
-    for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
-        pthread_t *threads = malloc(num_threads * sizeof(pthread_t));
-        PRThreadArgs *args = malloc(num_threads * sizeof(PRThreadArgs));
-        int active_threads = 0;
-        
-        /* Phase 1: Reset new_ranks to teleportation component */
-        for (int t = 0; t < num_threads; t++) {
-            int start = t * nodes_per_thread;
-            int end = (t + 1) * nodes_per_thread;
-            if (end > N) end = N;
-            
-            if (start >= N) break;
-            
-            args[t].pg = pg;
-            args[t].start_node = start;
-            args[t].end_node = end;
-            args[t].teleport = teleport;
-            args[t].damping = damping;
-            args[t].N = N;
-            args[t].node_mutexes = node_mutexes;
-            
-            pthread_create(&threads[t], NULL, reset_ranks_worker, &args[t]);
-            active_threads++;
-        }
-        
-        for (int t = 0; t < active_threads; t++) {
-            pthread_join(threads[t], NULL);
-        }
-        
-        /* Phase 2: Distribute ranks from each node */
-        active_threads = 0;
-        for (int t = 0; t < num_threads; t++) {
-            int start = t * nodes_per_thread;
-            int end = (t + 1) * nodes_per_thread;
-            if (end > N) end = N;
-            
-            if (start >= N) break;
-            
-            args[t].pg = pg;
-            args[t].start_node = start;
-            args[t].end_node = end;
-            args[t].teleport = teleport;
-            args[t].damping = damping;
-            args[t].N = N;
-            args[t].node_mutexes = node_mutexes;
-            
-            pthread_create(&threads[t], NULL, distribute_ranks_worker, &args[t]);
-            active_threads++;
-        }
-        
-        for (int t = 0; t < active_threads; t++) {
-            pthread_join(threads[t], NULL);
-        }
-        
-        /* Phase 3: Check convergence and update ranks */
-        double diff = 0.0;
-        for (int i = 0; i < N; i++) {
-            diff += fabs(pg->new_ranks[i] - pg->ranks[i]);
-            pg->ranks[i] = pg->new_ranks[i];
-        }
-        
-        if (iter % 10 == 0 || iter == MAX_ITERATIONS - 1) {
-            printf("[PageRank] Iteration %d: L1 diff = %.6e\n", iter + 1, diff);
-        }
-        
-        if (diff < CONVERGENCE_THRESHOLD) {
-            printf("[PageRank] Converged after %d iterations\n", iter + 1);
-            free(threads);
-            free(args);
+            double total_elapsed = difftime(now, start_time);
+            printf("[PageRank] CONVERGED after %d iterations (%.0f seconds)\n", 
+                   iter + 1, total_elapsed);
             break;
         }
         
-        free(threads);
-        free(args);
+        if (iter == MAX_ITERATIONS - 1) {
+            double total_elapsed = difftime(now, start_time);
+            printf("[PageRank] STOPPED: Max iterations (%d) reached (%.0f seconds)\n", 
+                   MAX_ITERATIONS, total_elapsed);
+        }
     }
-    
-    /* Cleanup mutexes */
-    for (int i = 0; i < N; i++) {
-        pthread_mutex_destroy(&node_mutexes[i]);
-    }
-    free(node_mutexes);
 }
 
 /* ============================================================
@@ -390,20 +262,27 @@ void pagerank_save_ranks(PageRankGraph *pg, const char *filename) {
 void pagerank_print_ranks(PageRankGraph *pg) {
     if (!pg) return;
     
-    printf("\n=== PageRank Results ===\n");
+    printf("\n=== PageRank Results (first 20 nodes) ===\n");
     printf("Node ID | Rank (absolute) | Normalized (%%)\n");
     printf("--------|-----------------|-----------------\n");
     
     double max_rank = 0.0;
+    int display_limit = (pg->num_nodes < 20) ? pg->num_nodes : 20;
+    
     for (int i = 0; i < pg->num_nodes; i++) {
         if (pg->ranks[i] > max_rank) max_rank = pg->ranks[i];
     }
     
-    for (int i = 0; i < pg->num_nodes; i++) {
+    for (int i = 0; i < display_limit; i++) {
         double normalized = (pg->ranks[i] / max_rank) * 100.0;
         printf("%7d | %15.12f | %10.6f%%\n", i, pg->ranks[i], normalized);
     }
-    printf("========================\n");
+    
+    if (pg->num_nodes > 20) {
+        printf("... and %d more nodes (see output file for full list)\n", 
+               pg->num_nodes - 20);
+    }
+    printf("===========================================\n");
 }
 
 void pagerank_free(PageRankGraph *pg) {
