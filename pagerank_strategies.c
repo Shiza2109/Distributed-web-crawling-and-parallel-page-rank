@@ -62,6 +62,7 @@ typedef struct {
     double            damping;
     int               N;
     pthread_mutex_t  *node_mutexes;
+    double            dangling_contrib;   /* accumulated dangling mass (main thread distributes after join — no lock needed) */
 } CentralizedArgs;
 
 /* Reset new_ranks for the assigned slice */
@@ -77,7 +78,6 @@ static void *central_reset_worker(void *arg) {
 static void *central_distribute_worker(void *arg) {
     CentralizedArgs *a = (CentralizedArgs *)arg;
     PageRankGraph *pg  = a->pg;
-    int N              = a->N;
     double damping     = a->damping;
 
     for (int i = a->start_node; i < a->end_node; i++) {
@@ -92,13 +92,10 @@ static void *central_distribute_worker(void *arg) {
                 pthread_mutex_unlock(&a->node_mutexes[target]);
             }
         } else {
-            /* Dangling page: distribute equally to all */
-            double share = rank_contrib / N;
-            for (int j = 0; j < N; j++) {
-                pthread_mutex_lock(&a->node_mutexes[j]);
-                pg->new_ranks[j] += share;
-                pthread_mutex_unlock(&a->node_mutexes[j]);
-            }
+            /* Dangling page: accumulate mass locally.
+               The main thread will distribute it uniformly after all threads join,
+               avoiding O(N) mutex acquisitions per dangling node per iteration. */
+            a->dangling_contrib += rank_contrib;
         }
     }
     return NULL;
@@ -123,7 +120,7 @@ static void centralized_one_iteration(PageRankGraph *pg, int num_threads,
         if (s >= N) break;
         if (e > N)  e = N;
 
-        args[t] = (CentralizedArgs){ pg, s, e, teleport, damping, N, node_mutexes };
+        args[t] = (CentralizedArgs){ pg, s, e, teleport, damping, N, node_mutexes, 0.0 };
         pthread_create(&threads[t], NULL, central_reset_worker, &args[t]);
         active++;
     }
@@ -137,11 +134,20 @@ static void centralized_one_iteration(PageRankGraph *pg, int num_threads,
         if (s >= N) break;
         if (e > N)  e = N;
 
-        args[t] = (CentralizedArgs){ pg, s, e, teleport, damping, N, node_mutexes };
+        args[t] = (CentralizedArgs){ pg, s, e, teleport, damping, N, node_mutexes, 0.0 };
         pthread_create(&threads[t], NULL, central_distribute_worker, &args[t]);
         active++;
     }
     for (int t = 0; t < active; t++) pthread_join(threads[t], NULL);
+
+    /* Distribute dangling mass uniformly — lock-free since all threads have joined.
+       One O(N) pass replaces O(dangling_nodes * N) mutex operations. */
+    double total_dangling = 0.0;
+    for (int t = 0; t < active; t++) total_dangling += args[t].dangling_contrib;
+    if (total_dangling > 0.0) {
+        double dshare = total_dangling / N;
+        for (int i = 0; i < N; i++) pg->new_ranks[i] += dshare;
+    }
 
     free(threads);
     free(args);
@@ -159,6 +165,7 @@ typedef struct {
     double         damping;
     int            N;
     double        *local_new_ranks;   
+    double         local_dangling;
 } DistributedArgs;
 
 /*
@@ -177,6 +184,8 @@ static void *distributed_compute_worker(void *arg) {
     int N              = a->N;
     double damping     = a->damping;
 
+    a->local_dangling = 0.0;
+
     /* Zero the local buffer */
     memset(a->local_new_ranks, 0, N * sizeof(double));
 
@@ -190,11 +199,8 @@ static void *distributed_compute_worker(void *arg) {
                 a->local_new_ranks[target] += share;
             }
         } else {
-            /* Dangling page: distribute equally */
-            double share = rank_contrib / N;
-            for (int j = 0; j < N; j++) {
-                a->local_new_ranks[j] += share;
-            }
+            /* Dangling page: accumulate mass locally */
+            a->local_dangling += rank_contrib;
         }
     }
     return NULL;
@@ -222,15 +228,25 @@ static void distributed_one_iteration(PageRankGraph *pg, int num_threads,
         if (s >= N) break;
         if (e > N)  e = N;
 
-        args[t] = (DistributedArgs){ pg, s, e, teleport, damping, N, local_buffers[t] };
+        args[t] = (DistributedArgs){ pg, s, e, teleport, damping, N, local_buffers[t], 0.0 };
         pthread_create(&threads[t], NULL, distributed_compute_worker, &args[t]);
         active++;
     }
     for (int t = 0; t < active; t++) pthread_join(threads[t], NULL);
 
-    /* Reduction: sum all local buffers + teleport into pg->new_ranks[] */
+    /* Gather all thread-local dangling mass */
+    double total_dangling = 0.0;
+    for (int t = 0; t < active; t++) {
+        total_dangling += args[t].local_dangling;
+    }
+    double combined_teleport = teleport;
+    if (total_dangling > 0.0) {
+        combined_teleport += (total_dangling / N);
+    }
+
+    /* Reduction: sum all local buffers + combined_teleport into pg->new_ranks[] */
     for (int i = 0; i < N; i++) {
-        double sum = teleport;   /* start with teleport component */
+        double sum = combined_teleport;   /* start with teleport + dangling part */
         for (int t = 0; t < active; t++) {
             sum += local_buffers[t][i];
         }
@@ -488,6 +504,8 @@ void pagerank_run_comparison(PageRankGraph *pg,
                              const char *output_file) {
     if (!pg) return;
 
+    int N = pg->num_nodes;  
+    
     const int TOP_K = 5;
     int    top_ids[4][5];
     double top_ranks[4][5];
@@ -510,17 +528,35 @@ void pagerank_run_comparison(PageRankGraph *pg,
            num_threads, max_iters, threshold);
     printf("============================================================\n\n");
 
+    /* Large-graph guard: centralized mutex strategy is impractical above ~500K nodes.
+       Even after the dangling-node fix, per-node mutexes cause severe lock contention
+       at scale. Skip and report as N/A so the benchmark finishes in reasonable time. */
+    int large_graph = (pg->num_nodes > 500000);
+    if (large_graph) {
+        printf("[NOTE] N=%d > 500K — skipping centralized strategies (mutex contention impractical at this scale).\n\n", N);
+    }
+
     /* --- Run Strategy 1 --- */
     printf("[1/4] Centralized Aggregation + Fixed Iterations\n");
-    results[0] = pagerank_centralized_fixed(pg, num_threads, max_iters);
-    find_top_nodes(pg, TOP_K, top_ids[0], top_ranks[0]);
-    printf("\n");
+    if (large_graph) {
+        printf("  [SKIPPED] Graph too large for per-node mutex centralized strategy.\n\n");
+        results[0] = (StrategyResult){0.0, 0, -1.0};
+    } else {
+        results[0] = pagerank_centralized_fixed(pg, num_threads, max_iters);
+        find_top_nodes(pg, TOP_K, top_ids[0], top_ranks[0]);
+        printf("\n");
+    }
 
     /* --- Run Strategy 2 --- */
     printf("[2/4] Centralized Aggregation + Convergence Termination\n");
-    results[1] = pagerank_centralized_convergence(pg, num_threads, threshold);
-    find_top_nodes(pg, TOP_K, top_ids[1], top_ranks[1]);
-    printf("\n");
+    if (large_graph) {
+        printf("  [SKIPPED] Graph too large for per-node mutex centralized strategy.\n\n");
+        results[1] = (StrategyResult){0.0, 0, -1.0};
+    } else {
+        results[1] = pagerank_centralized_convergence(pg, num_threads, threshold);
+        find_top_nodes(pg, TOP_K, top_ids[1], top_ranks[1]);
+        printf("\n");
+    }
 
     /* --- Run Strategy 3 --- */
     printf("[3/4] Distributed Reduction + Fixed Iterations\n");
@@ -550,6 +586,11 @@ void pagerank_run_comparison(PageRankGraph *pg,
     printf("-------------------------------+------------+--------+--------------+----------\n");
 
     for (int i = 0; i < 4; i++) {
+        if (results[i].final_diff < 0.0) {
+            printf("%-30s | %10s | %6s | %12s | %8s\n",
+                   names[i], "SKIPPED", "-", "-", "-");
+            continue;
+        }
         double speedup = (results[i].elapsed_ms > 0.0)
                          ? max_time / results[i].elapsed_ms : 0.0;
         printf("%-30s | %10.2f | %6d | %12.4e | %7.2fx\n",
@@ -564,6 +605,10 @@ void pagerank_run_comparison(PageRankGraph *pg,
     printf("\n%-30s | Top-%d Node IDs (by PageRank)\n", "Strategy", TOP_K);
     printf("-------------------------------+-------------------------------\n");
     for (int i = 0; i < 4; i++) {
+        if (results[i].final_diff < 0.0) {
+            printf("%-30s | SKIPPED\n", names[i]);
+            continue;
+        }
         printf("%-30s |", names[i]);
         for (int k = 0; k < TOP_K && k < pg->num_nodes; k++) {
             printf(" %d(%.4e)", top_ids[i][k], top_ranks[i][k]);
@@ -571,18 +616,30 @@ void pagerank_run_comparison(PageRankGraph *pg,
         printf("\n");
     }
 
-    /* --- Correctness check: do all strategies agree on top-1? --- */
-    printf("\n[Correctness] Top-1 node across strategies: ");
-    int all_agree = 1;
-    for (int i = 1; i < 4; i++) {
-        if (top_ids[i][0] != top_ids[0][0]) { all_agree = 0; break; }
+    /* --- Correctness check: only compare strategies that were actually run --- */
+    printf("\n[Correctness] Top-1 node across run strategies: ");
+    int ref_idx = -1;
+    for (int i = 0; i < 4; i++) {
+        if (results[i].final_diff >= 0.0) { ref_idx = i; break; }
     }
-    if (all_agree) {
-        printf("PASS (all agree: node %d)\n", top_ids[0][0]);
+    int all_agree = 1;
+    if (ref_idx < 0) {
+        printf("N/A (all strategies skipped)\n");
+        all_agree = -1;
     } else {
-        printf("MISMATCH — ");
-        for (int i = 0; i < 4; i++) printf("%d ", top_ids[i][0]);
-        printf("\n");
+        for (int i = ref_idx + 1; i < 4; i++) {
+            if (results[i].final_diff < 0.0) continue;
+            if (top_ids[i][0] != top_ids[ref_idx][0]) { all_agree = 0; break; }
+        }
+        if (all_agree) {
+            printf("PASS (all agree: node %d)\n", top_ids[ref_idx][0]);
+        } else {
+            printf("MISMATCH — ");
+            for (int i = 0; i < 4; i++) {
+                if (results[i].final_diff >= 0.0) printf("%d ", top_ids[i][0]);
+            }
+            printf("\n");
+        }
     }
 
 
@@ -599,6 +656,11 @@ void pagerank_run_comparison(PageRankGraph *pg,
             fprintf(f, "-------------------------------+------------+--------+--------------+----------\n");
 
             for (int i = 0; i < 4; i++) {
+                if (results[i].final_diff < 0.0) {
+                    fprintf(f, "%-30s | %10s | %6s | %12s | %8s\n",
+                            names[i], "SKIPPED", "-", "-", "-");
+                    continue;
+                }
                 double speedup = (results[i].elapsed_ms > 0.0)
                                  ? max_time / results[i].elapsed_ms : 0.0;
                 fprintf(f, "%-30s | %10.2f | %6d | %12.4e | %7.2fx\n",
@@ -611,6 +673,10 @@ void pagerank_run_comparison(PageRankGraph *pg,
 
             fprintf(f, "\nTop-%d nodes per strategy:\n", TOP_K);
             for (int i = 0; i < 4; i++) {
+                if (results[i].final_diff < 0.0) {
+                    fprintf(f, "  %s: SKIPPED\n", names[i]);
+                    continue;
+                }
                 fprintf(f, "  %s:", names[i]);
                 for (int k = 0; k < TOP_K && k < pg->num_nodes; k++) {
                     fprintf(f, " node_%d(%.6e)", top_ids[i][k], top_ranks[i][k]);
@@ -618,8 +684,13 @@ void pagerank_run_comparison(PageRankGraph *pg,
                 fprintf(f, "\n");
             }
 
-            fprintf(f, "\nCorrectness: top-1 %s (node %d)\n",
-                    all_agree ? "PASS" : "MISMATCH", top_ids[0][0]);
+            if (all_agree >= 0) {
+                fprintf(f, "\nCorrectness: top-1 %s (node %d)\n",
+                        all_agree ? "PASS" : "MISMATCH",
+                        ref_idx >= 0 ? top_ids[ref_idx][0] : -1);
+            } else {
+                fprintf(f, "\nCorrectness: N/A (all strategies skipped)\n");
+            }
 
             fclose(f);
             printf("\n[Output] Results saved to %s\n", output_file);

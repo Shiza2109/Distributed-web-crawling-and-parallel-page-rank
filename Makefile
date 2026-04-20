@@ -15,24 +15,27 @@ all: $(TESTS)
 
 # ---- Milestone 1 targets ----
 
-# Your graph storage test
 test_ibrahim.exe: test_ibrahim.c graph.c
 	$(CC) $(CFLAGS) -o $@ test_ibrahim.c graph.c $(LDFLAGS)
 
-# Abdur's duplicate test
 test_duplicate.exe: test_duplicate.c frontier.c crawl_policy.c
 	$(CC) $(CFLAGS) -o $@ test_duplicate.c frontier.c crawl_policy.c $(LDFLAGS)
 
-# Complete integration test
 test_integration.exe: test_integration.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c manual_worker.c reproducibility.c
 	$(CC) $(CFLAGS) -o $@ test_integration.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c manual_worker.c reproducibility.c $(LDFLAGS)
 
 # ---- Milestone 2 targets ----
 
-
-# Aleena's strategy comparison (centralized vs distributed, fixed vs convergence)
 test_strategies.exe: test_strategies.c pagerank_strategies.c pagerank.c
 	$(CC) $(CFLAGS) -o $@ test_strategies.c pagerank_strategies.c pagerank.c $(LDFLAGS_MATH)
+
+# graph500-22 benchmark (undirected)
+benchmark_graph500.exe: benchmark_graph500.c pagerank_strategies.c pagerank.c
+	$(CC) $(CFLAGS) -O2 -o $@ benchmark_graph500.c pagerank_strategies.c pagerank.c $(LDFLAGS_MATH)
+
+# wiki-Talk + cit-Patents benchmark (directed)
+benchmark_small.exe: benchmark_small_datasets.c pagerank_strategies.c pagerank.c
+	$(CC) $(CFLAGS) -O2 -o $@ benchmark_small_datasets.c pagerank_strategies.c pagerank.c $(LDFLAGS_MATH)
 
 # Clean
 clean:
@@ -40,25 +43,34 @@ clean:
 
 # ---- Run targets ----
 
-# Run your test
 test-ibrahim: test_ibrahim.exe
 	./test_ibrahim.exe
 
-# Run duplicate test  
 test-duplicate: test_duplicate.exe
 	./test_duplicate.exe
 
-# Run integration test
 test-integration: test_integration.exe
 	./test_integration.exe
 
-
-# Run Aleena's strategy comparison (small graph)
 test-strategies-small: test_strategies.exe
 	./test_strategies.exe crawled_graph.adj 4 50 1e-6
 
-# Run Aleena's strategy comparison (large crawled graph)
 test-strategies: test_strategies.exe
 	./test_strategies.exe crawled_graph_threaded.adj 4 50 1e-6
 
-.PHONY: all clean test-ibrahim test-duplicate test-integration test-strategies test-strategies-small
+benchmark-graph500: benchmark_graph500.exe
+	./benchmark_graph500.exe graph500-22/graph500-22.e 4 10 1e-4
+
+benchmark-graph500-custom: benchmark_graph500.exe
+	./benchmark_graph500.exe graph500-22/graph500-22.e $(T) $(I) $(THR)
+
+benchmark-wiki: benchmark_small.exe
+	./benchmark_small.exe wiki-Talk/wiki-Talk.e wiki-Talk 4 10 1e-4
+
+benchmark-patents: benchmark_small.exe
+	./benchmark_small.exe citi-patents/cit-Patents.e cit-Patents 4 10 1e-4
+
+.PHONY: all clean test-ibrahim test-duplicate test-integration \
+        test-strategies test-strategies-small \
+        benchmark-graph500 benchmark-graph500-custom \
+        benchmark-wiki benchmark-patents
