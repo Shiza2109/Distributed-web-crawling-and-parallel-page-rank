@@ -1,0 +1,18 @@
+# PageRank Strategy Comparison Results (Aleena - Milestone 2)
+# Graph: 438158 nodes
+# Threads: 4  |  Max iters: 50  |  Threshold: 1e-06
+
+Strategy                       |  Time (ms) |  Iters |   Final Diff |  Speedup
+-------------------------------+------------+--------+--------------+----------
+Centralized + Fixed            |    8884.81 |     50 |   5.9109e-04 |    1.52x
+Centralized + Convergence      |   13545.80 |     90 |   8.8800e-07 |    1.00x
+Distributed + Fixed            |    2450.28 |     50 |   5.9109e-04 |    5.53x
+Distributed + Convergence      |    3189.82 |     90 |   8.8800e-07 |    4.25x
+
+Top-5 nodes per strategy:
+  Centralized + Fixed: node_0(4.592986e-01) node_1(3.906557e-01) node_138(4.279923e-06) node_56551(2.743023e-06) node_94102(2.088292e-06)
+  Centralized + Convergence: node_0(4.594342e-01) node_1(3.905201e-01) node_138(4.279923e-06) node_56551(2.743023e-06) node_94102(2.088292e-06)
+  Distributed + Fixed: node_0(4.592986e-01) node_1(3.906557e-01) node_138(4.279923e-06) node_56551(2.743023e-06) node_94102(2.088292e-06)
+  Distributed + Convergence: node_0(4.594342e-01) node_1(3.905201e-01) node_138(4.279923e-06) node_56551(2.743023e-06) node_94102(2.088292e-06)
+
+Correctness: top-1 PASS (node 0)

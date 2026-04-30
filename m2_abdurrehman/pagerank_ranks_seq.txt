@@ -1,0 +1,8 @@
+# PageRank Scores
+# Nodes: 3
+# Damping Factor: 0.85
+# Format: node_id | rank | normalized_rank(%)
+
+0 | 0.212765956574 | 37.037037%
+1 | 0.574468086852 | 100.000000%
+2 | 0.212765956574 | 37.037037%
