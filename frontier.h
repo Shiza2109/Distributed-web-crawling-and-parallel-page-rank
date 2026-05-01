@@ -103,4 +103,12 @@ void frontier_destroy(Frontier *fr);
 int frontier_is_duplicate(Frontier *fr, const char *url);
 void frontier_mark_seen(Frontier *fr, const char *url);
 
+/*
+ * frontier_reset_for_recrawl — clear the shutdown flag so workers
+ * can pop new URLs again after an initial crawl completes.
+ * The seen_urls hash set is kept intact so already-crawled pages
+ * are NOT re-fetched.  (Aleena — Milestone 3)
+ */
+void frontier_reset_for_recrawl(Frontier *fr);
+
 #endif

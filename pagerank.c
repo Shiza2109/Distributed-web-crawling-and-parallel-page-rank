@@ -74,11 +74,11 @@ PageRankGraph* pagerank_load_graph(const char *filename) {
         /* Count outlinks */
         int outlink_count = 0;
         if (outlink_str[0] != '\n' && outlink_str[0] != '\0') {
-            char *saveptr;
-            char *token = strtok_r(outlink_str, ",", &saveptr);
-            while (token) {
-                outlink_count++;
-                token = strtok_r(NULL, ",", &saveptr);
+            outlink_count = 1;
+            for (int k = 0; outlink_str[k] != '\0' && outlink_str[k] != '\n'; k++) {
+                if (outlink_str[k] == ',') {
+                    outlink_count++;
+                }
             }
         }
         

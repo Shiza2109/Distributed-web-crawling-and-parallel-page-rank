@@ -356,3 +356,25 @@ void frontier_destroy(Frontier *fr) {
     pthread_cond_destroy(&fr->not_empty);
     pthread_mutex_destroy(&fr->url_table.lock);
 }
+
+/* ============================================================
+   Milestone 3 — Aleena: Reset frontier for incremental re-crawl
+   ============================================================ */
+
+void frontier_reset_for_recrawl(Frontier *fr) {
+    if (!fr) return;
+
+    pthread_mutex_lock(&fr->lock);
+
+    /* Clear the shutdown flag so workers can pop again */
+    fr->shutdown_flag = 0;
+
+    /* Wake any threads that may be blocked on the condition variable */
+    pthread_cond_broadcast(&fr->not_empty);
+
+    pthread_mutex_unlock(&fr->lock);
+
+    printf("[Frontier] Reset for re-crawl (shutdown cleared, "
+           "seen_urls preserved: %zu entries)\n",
+           fr->seen_urls.count);
+}

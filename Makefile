@@ -37,6 +37,11 @@ benchmark_graph500.exe: benchmark_graph500.c pagerank_strategies.c pagerank.c
 benchmark_small.exe: benchmark_small_datasets.c pagerank_strategies.c pagerank.c
 	$(CC) $(CFLAGS) -O2 -o $@ benchmark_small_datasets.c pagerank_strategies.c pagerank.c $(LDFLAGS_MATH)
 
+# ---- Milestone 3 targets (Aleena) ----
+
+m3_incremental.exe: m3_incremental.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c pagerank.c
+	$(CC) $(CFLAGS) -o $@ m3_incremental.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c pagerank.c $(LDFLAGS) -lm
+
 # Clean
 clean:
 	del /Q *.exe *.o 2>nul || rm -f *.exe *.o
@@ -70,7 +75,11 @@ benchmark-wiki: benchmark_small.exe
 benchmark-patents: benchmark_small.exe
 	./benchmark_small.exe citi-patents/cit-Patents.e cit-Patents 4 10 1e-4
 
+run-m3: m3_incremental.exe
+	./m3_incremental.exe --threads 4 --depth 0 --max-pages 100
+
 .PHONY: all clean test-ibrahim test-duplicate test-integration \
         test-strategies test-strategies-small \
         benchmark-graph500 benchmark-graph500-custom \
-        benchmark-wiki benchmark-patents
+        benchmark-wiki benchmark-patents \
+        run-m3
