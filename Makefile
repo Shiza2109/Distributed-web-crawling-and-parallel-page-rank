@@ -42,6 +42,24 @@ benchmark_small.exe: benchmark_small_datasets.c pagerank_strategies.c pagerank.c
 m3_incremental.exe: m3_incremental.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c parallel_pagerank.c
 	$(CC) $(CFLAGS) -o $@ m3_incremental.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c parallel_pagerank.c $(LDFLAGS) -lm
 
+# ---- Milestone 3 targets (Shiza — Incremental PageRank) ----
+
+m3_incremental_pagerank_test.exe: m3_incremental_pagerank_test.c m3_incremental_pagerank.c parallel_pagerank.c
+	$(CC) $(CFLAGS) -o $@ m3_incremental_pagerank_test.c m3_incremental_pagerank.c parallel_pagerank.c $(LDFLAGS) -lm
+
+# Integrated pipeline (Aleena + Shiza)
+# Depends on m3_incremental_webcrawler.exe at runtime (calls via system())
+m3_integrated_pipeline.exe: m3_integrated_pipeline.c m3_incremental_pagerank.c parallel_pagerank.c | m3_incremental_webcrawler.exe
+	$(CC) $(CFLAGS) -o $@ m3_integrated_pipeline.c m3_incremental_pagerank.c parallel_pagerank.c $(LDFLAGS) -lm
+
+# Web crawler for Phase 1 loading + Phase 2 crawling (Aleena)
+m3_incremental_webcrawler.exe: m3_incremental_webcrawler.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c parallel_pagerank.c
+	$(CC) $(CFLAGS) -pthread -o $@ m3_incremental_webcrawler.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c parallel_pagerank.c $(LDFLAGS) -lpthread -lcurl
+
+# Graph500 converter (pre-crawled graph for testing)
+graph500_to_phase1_converter.exe: graph500_to_phase1_converter.c
+	$(CC) $(CFLAGS) -o $@ graph500_to_phase1_converter.c $(LDFLAGS)
+
 # Clean
 clean:
 	del /Q *.exe *.o 2>nul || rm -f *.exe *.o

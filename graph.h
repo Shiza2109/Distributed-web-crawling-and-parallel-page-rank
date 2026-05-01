@@ -10,6 +10,7 @@ typedef struct Graph Graph;
 
 // Core graph operations (Aleena's implementation)
 Graph* graph_create(void);
+int graph_add_node(void *graph, const char *url);
 void graph_add_edge(void *graph, const char *from_url, const char *to_url);
 int graph_get_node_id(void *graph, const char *url);
 

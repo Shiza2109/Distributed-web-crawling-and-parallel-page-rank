@@ -51,6 +51,7 @@ static double now_ms(void) {
    ============================================================ */
 
 /* Phase 1 seeds — initial crawl (same domains used in M1/M2 testing) */
+/* UNUSED — Phase 1 now uses pre-generated graphs
 static const char *PHASE1_SEEDS[] = {
     "http://example.com",
     "http://example.org",
@@ -62,6 +63,7 @@ static const char *PHASE1_SEEDS[] = {
     "https://www.bbc.com/"
 };
 static const int PHASE1_SEED_COUNT = sizeof(PHASE1_SEEDS) / sizeof(PHASE1_SEEDS[0]);
+*/
 
 /*
  * Phase 2 seeds — NEW pages introduced after PageRank convergence.
@@ -81,8 +83,9 @@ static const int PHASE2_SEED_COUNT = sizeof(PHASE2_SEEDS) / sizeof(PHASE2_SEEDS[
 
 /* ============================================================
    Helper: seed the frontier and return count of URLs accepted
+   UNUSED — Phase 1 now uses pre-generated graphs
    ============================================================ */
-
+/*
 static int load_seeds(Frontier *fr, const char **seeds, int n) {
     int added = 0;
     for (int i = 0; i < n; i++) {
@@ -91,6 +94,7 @@ static int load_seeds(Frontier *fr, const char **seeds, int n) {
     }
     return added;
 }
+*/
 
 /* ============================================================
    Helper: wait for threaded crawl to finish
@@ -159,6 +163,230 @@ static int parse_args(int argc, char **argv, M3Config *cfg) {
 }
 
 /* ============================================================
+   PHASE 2 HELPERS: File operations and ID-offset merge
+   ============================================================ */
+
+/* Copy file efficiently */
+static int copy_file(const char *src, const char *dst) {
+    FILE *in = fopen(src, "rb");
+    FILE *out = fopen(dst, "wb");
+    if (!in || !out) {
+        if (in) fclose(in);
+        if (out) fclose(out);
+        return 1;
+    }
+
+    char buf[65536];
+    size_t n;
+    while ((n = fread(buf, 1, sizeof(buf), in)) > 0) {
+        fwrite(buf, 1, n, out);
+    }
+    fclose(in);
+    fclose(out);
+    return 0;
+}
+
+static int append_offset_adjacency(const char *src, const char *dst, uint64_t offset) {
+    FILE *in = fopen(src, "r");
+    FILE *out = fopen(dst, "a");
+    if (!in || !out) {
+        if (in) fclose(in);
+        if (out) fclose(out);
+        return 1;
+    }
+
+    char line[65536];
+    while (fgets(line, sizeof(line), in)) {
+        if (line[0] == '#') continue;
+
+        char *colon = strchr(line, ':');
+        if (!colon) continue;
+
+        *colon = '\0';
+        long long src_id = atoll(line);
+        fprintf(out, "%" PRIu64 ":", (uint64_t)src_id + offset);
+
+        char *neighbors = colon + 1;
+        char *token = strtok(neighbors, ",\r\n");
+        int first = 1;
+        while (token) {
+            long long dst_id = atoll(token);
+            if (!first) fprintf(out, ",");
+            fprintf(out, "%" PRIu64, (uint64_t)dst_id + offset);
+            first = 0;
+            token = strtok(NULL, ",\r\n");
+        }
+        fprintf(out, "\n");
+    }
+
+    fclose(in);
+    fclose(out);
+    return 0;
+}
+
+static int append_offset_edges(const char *src, const char *dst, uint64_t offset) {
+    FILE *in = fopen(src, "r");
+    FILE *out = fopen(dst, "a");
+    if (!in || !out) {
+        if (in) fclose(in);
+        if (out) fclose(out);
+        return 1;
+    }
+
+    char line[4096];
+    while (fgets(line, sizeof(line), in)) {
+        if (line[0] == '#') continue;
+
+        long long src_id, dst_id;
+        if (sscanf(line, "%lld %lld", &src_id, &dst_id) == 2) {
+            fprintf(out, "%" PRIu64 " %" PRIu64 "\n",
+                    (uint64_t)src_id + offset, (uint64_t)dst_id + offset);
+        }
+    }
+
+    fclose(in);
+    fclose(out);
+    return 0;
+}
+
+static int append_offset_url_map(const char *src, const char *dst, uint64_t offset) {
+    FILE *in = fopen(src, "r");
+    FILE *out = fopen(dst, "a");
+    if (!in || !out) {
+        if (in) fclose(in);
+        if (out) fclose(out);
+        return 1;
+    }
+
+    char line[8192];
+    while (fgets(line, sizeof(line), in)) {
+        if (line[0] == '#') continue;
+
+        long long node_id;
+        char url[7000];
+        if (sscanf(line, "%lld: %6999s", &node_id, url) == 2) {
+            fprintf(out, "%" PRIu64 ": %s\n", (uint64_t)node_id + offset, url);
+        }
+    }
+
+    fclose(in);
+    fclose(out);
+    return 0;
+}
+
+/* Write offsetted adjacency file (creates dst) */
+static int write_offset_adjacency(const char *src, const char *dst, uint64_t offset) {
+    FILE *in = fopen(src, "r");
+    FILE *out = fopen(dst, "w");
+    if (!in || !out) {
+        if (in) fclose(in);
+        if (out) fclose(out);
+        return 1;
+    }
+
+    char line[65536];
+    while (fgets(line, sizeof(line), in)) {
+        if (line[0] == '#') continue;
+
+        char *colon = strchr(line, ':');
+        if (!colon) continue;
+
+        *colon = '\0';
+        long long src_id = atoll(line);
+        fprintf(out, "%" PRIu64 ":", (uint64_t)src_id + offset);
+
+        char *neighbors = colon + 1;
+        char *token = strtok(neighbors, ",\r\n");
+        int first = 1;
+        while (token) {
+            long long dst_id = atoll(token);
+            if (!first) fprintf(out, ",");
+            fprintf(out, "%" PRIu64, (uint64_t)dst_id + offset);
+            first = 0;
+            token = strtok(NULL, ",\r\n");
+        }
+        fprintf(out, "\n");
+    }
+
+    fclose(in);
+    fclose(out);
+    return 0;
+}
+
+/* Write offsetted edge list file (creates dst) */
+static int write_offset_edges(const char *src, const char *dst, uint64_t offset) {
+    FILE *in = fopen(src, "r");
+    FILE *out = fopen(dst, "w");
+    if (!in || !out) {
+        if (in) fclose(in);
+        if (out) fclose(out);
+        return 1;
+    }
+
+    char line[4096];
+    while (fgets(line, sizeof(line), in)) {
+        if (line[0] == '#') continue;
+
+        long long src_id, dst_id;
+        if (sscanf(line, "%lld %lld", &src_id, &dst_id) == 2) {
+            fprintf(out, "%" PRIu64 " %" PRIu64 "\n",
+                    (uint64_t)src_id + offset, (uint64_t)dst_id + offset);
+        }
+    }
+
+    fclose(in);
+    fclose(out);
+    return 0;
+}
+
+/* Write offsetted URL map file (creates dst) */
+static int write_offset_url_map(const char *src, const char *dst, uint64_t offset) {
+    FILE *in = fopen(src, "r");
+    FILE *out = fopen(dst, "w");
+    if (!in || !out) {
+        if (in) fclose(in);
+        if (out) fclose(out);
+        return 1;
+    }
+
+    char line[8192];
+    while (fgets(line, sizeof(line), in)) {
+        if (line[0] == '#') continue;
+
+        long long node_id;
+        char url[7000];
+        if (sscanf(line, "%lld: %6999s", &node_id, url) == 2) {
+            fprintf(out, "%" PRIu64 ": %s\n", (uint64_t)node_id + offset, url);
+        }
+    }
+
+    fclose(in);
+    fclose(out);
+    return 0;
+}
+
+/* Append file src to dst (dst is created if missing) */
+static int append_file(const char *src, const char *dst) {
+    FILE *in = fopen(src, "rb");
+    FILE *out = fopen(dst, "ab");
+    if (!in || !out) {
+        if (in) fclose(in);
+        if (out) fclose(out);
+        return 1;
+    }
+
+    char buf[65536];
+    size_t n;
+    while ((n = fread(buf, 1, sizeof(buf), in)) > 0) {
+        fwrite(buf, 1, n, out);
+    }
+
+    fclose(in);
+    fclose(out);
+    return 0;
+}
+
+/* ============================================================
    MAIN — Milestone 3 Incremental Pipeline
    ============================================================ */
 
@@ -170,7 +398,7 @@ int main(int argc, char **argv) {
     }
 
     printf("============================================================\n");
-    printf("  Milestone 3 — Incremental Graph Growth (Aleena)\n");
+    printf("  Milestone 3 - Incremental Graph Growth (Aleena)\n");
     printf("============================================================\n");
     printf("  Threads   : %d\n",          cfg.threads);
     printf("  Max depth : %d\n",          cfg.max_depth);
@@ -194,50 +422,38 @@ int main(int argc, char **argv) {
     uint64_t nodes_after,  edges_after;
 
     /* ==========================================================
-       PHASE 1 — Initial Crawl
+       PHASE 1 — Compute PageRank Directly (Skip Graph Struct)
+       Memory-Efficient: Loads only into ParallelGraph for PageRank
        ========================================================== */
-    printf("┌─────────────────────────────────────────────┐\n");
-    printf("│  PHASE 1: Initial Crawl                     │\n");
-    printf("└─────────────────────────────────────────────┘\n");
+    printf("\n========================================================\n");
+    printf("  PHASE 1: PageRank Computation (File-Based)\n");
+    printf("========================================================\n");
 
-    policy_set_seed_domains(policy, (char **)PHASE1_SEEDS, PHASE1_SEED_COUNT);
-    int p1_added = load_seeds(&frontier, PHASE1_SEEDS, PHASE1_SEED_COUNT);
-    printf("[Phase 1] Seeds: %d requested, %d accepted\n",
-           PHASE1_SEED_COUNT, p1_added);
-
-    double p1_start = now_ms();
-
-    if (worker_pool_start(&pool, &frontier, graph, cfg.threads) != 0) {
-        fprintf(stderr, "Failed to start worker pool\n");
+    /* Check if phase1_graph.adj exists */
+    FILE *phase1_check = fopen("phase1_graph.adj", "r");
+    if (!phase1_check) {
+        fprintf(stderr, "\nERROR: phase1_graph.adj not found!\n");
+        fprintf(stderr, "Use graph500_to_phase1_converter.exe to generate it:\n");
+        fprintf(stderr, "  ./graph500_to_phase1_converter.exe -v graph500-22.v -e graph500-22.e\n");
+        fprintf(stderr, "Or run normal web crawling pipeline first.\n\n");
         return 1;
     }
-    wait_for_crawl(&frontier, &pool);
-    frontier_shutdown(&frontier);
-    worker_pool_join(&pool);
+    fclose(phase1_check);
 
-    double p1_elapsed = now_ms() - p1_start;
+    printf("[Phase 1] Loading phase1_graph.adj for PageRank computation...\n");
 
-    graph_get_stats(graph, &nodes_before, &edges_before);
-    printf("[Phase 1] Crawl complete: %" PRIu64 " nodes, %" PRIu64 " edges (%.0f ms)\n",
-           nodes_before, edges_before, p1_elapsed);
-
-    /* Save Phase 1 graph */
-    graph_save(graph, "phase1_graph.adj", "adjacency");
-    graph_save(graph, "phase1_graph.edge", "edgelist");
-    graph_save_url_map(graph, "phase1_url_map.txt");
-
-    /* ==========================================================
-       PHASE 1 — PageRank (convergence-based)
-       ========================================================== */
-    printf("\n┌─────────────────────────────────────────────┐\n");
-    printf("│  PHASE 1: PageRank Convergence              │\n");
-    printf("└─────────────────────────────────────────────┘\n");
-
+    /* Load directly into ParallelGraph (avoids duplicate Graph struct in memory) */
     ParallelGraph *pg = parallel_load_graph("phase1_graph.adj");
     if (!pg) {
-        fprintf(stderr, "Failed to load Phase 1 graph for PageRank\n");
+        fprintf(stderr, "Failed to load phase1_graph.adj for PageRank\n");
         return 1;
     }
+
+    /* Get stats from ParallelGraph */
+    nodes_before = pg->num_nodes;
+    edges_before = pg->num_edges;
+    printf("[Phase 1] Graph loaded: %" PRIu64 " nodes, %" PRIu64 " edges\n",
+           nodes_before, edges_before);
 
     printf("[PageRank] Running parallel PageRank on Phase 1 graph "
            "(%d nodes, %d threads)...\n", pg->num_nodes, cfg.threads);
@@ -247,18 +463,61 @@ int main(int argc, char **argv) {
     parallel_pagerank_print_ranks(pg);
     printf("[PageRank] Phase 1 ranks saved to phase1_ranks.txt\n");
 
+    /* Save Phase 1 stats before freeing the graph */
+    nodes_before = pg->num_nodes;
+    edges_before = pg->num_edges;
+
     parallel_free_graph(pg);
 
-    /* ==========================================================
-       PHASE 2 — Inject New Pages & Re-Crawl
-       ========================================================== */
-    printf("\n┌─────────────────────────────────────────────┐\n");
-    printf("│  PHASE 2: Incremental Crawl (New Pages)     │\n");
-    printf("└─────────────────────────────────────────────┘\n");
+    /* Verify phase1_ranks.txt was created */
+    FILE *ranks_check = fopen("phase1_ranks.txt", "r");
+    if (ranks_check) {
+        fclose(ranks_check);
+        printf("[Phase 1] [OK] Phase 1 ranks computed and saved\n");
+    } else {
+        fprintf(stderr, "ERROR: Failed to create phase1_ranks.txt\n");
+        return 1;
+    }
 
-    /* Reset the frontier so workers can pop again.
-       The seen_urls set stays intact — already-crawled pages will
-       be skipped by the duplicate filter. */
+    /* ==========================================================
+       PHASE 2 — Extend Phase 1: Append New Pages to Union Graph
+       The union is created by copying Phase 1 files + appending crawl
+       ========================================================== */
+    printf("\n========================================================\n");
+    printf("  PHASE 2: Extend Phase 1 Graph with New Crawled Pages\n");
+    printf("========================================================\n");
+
+    /* Step 1: Copy Phase 1 files to Phase 2 */
+    printf("[Phase 2] Step 1: Copying Phase 1 graph to Phase 2 files...\n");
+    if (copy_file("phase1_graph.adj", "phase2_graph.adj") != 0 ||
+        copy_file("phase1_graph.edge", "phase2_graph.edge") != 0 ||
+        copy_file("phase1_url_map.txt", "phase2_url_map.txt") != 0) {
+        fprintf(stderr, "ERROR: Failed to copy Phase 1 graph files\n");
+        return 1;
+    }
+    printf("[Phase 2] Step 1: Copied Phase 1 graph [OK]\n");
+
+    /* Step 2: Keep Phase 1 on disk; crawl only new seeds in memory */
+    printf("[Phase 2] Step 2: Phase 1 remains on disk (no in-memory load)\n");
+
+    /* Record Phase 1 stats before crawling Phase 2 */
+    uint64_t phase1_node_count = nodes_before;
+    uint64_t phase1_edge_count = edges_before;
+    printf("[Phase 2] Phase 1 baseline: %" PRIu64 " nodes, %" PRIu64 " edges\n",
+           phase1_node_count, phase1_edge_count);
+    printf("[Phase 2] New nodes will start from ID: %" PRIu64 "\n", phase1_node_count);
+
+    /* Step 3: Create fresh graph for Phase 2 union crawling */
+    printf("[Phase 2] Step 3: Creating graph for union crawling...\n");
+    if (graph) graph_destroy(graph);  /* Free Phase 1 if still in memory */
+    graph = graph_create();
+    if (!graph) {
+        fprintf(stderr, "ERROR: Failed to create graph for Phase 2\n");
+        return 1;
+    }
+
+    /* Step 4: Prepare frontier for Phase 2 crawling */
+    printf("[Phase 2] Step 4: Setting up frontier for Phase 2 crawling...\n");
     frontier_reset_for_recrawl(&frontier);
 
     /* Reset policy counters so we get a fresh budget for Phase 2 */
@@ -296,38 +555,96 @@ int main(int argc, char **argv) {
 
     double p2_elapsed = now_ms() - p2_start;
 
-    graph_get_stats(graph, &nodes_after, &edges_after);
-    printf("[Phase 2] Crawl complete: %" PRIu64 " nodes, %" PRIu64 " edges (%.0f ms)\n",
-           nodes_after, edges_after, p2_elapsed);
+    uint64_t new_nodes = 0, new_edges = 0;
+    graph_get_stats(graph, &new_nodes, &new_edges);
+    nodes_after = phase1_node_count + new_nodes;
+    edges_after = phase1_edge_count + new_edges;
+    printf("\n[Phase 2] Crawl complete using %d worker threads\n", cfg.threads);
+        printf("[Phase 2] Union graph: %" PRIu64 " total nodes (Phase1: %" PRIu64", Phase2 new: %" PRIu64 ")\n",
+            nodes_after, phase1_node_count, new_nodes);
+    printf("[Phase 2] Union graph: %" PRIu64 " total edges (%.0f ms)\n",
+           edges_after, p2_elapsed);
+    printf("[Phase 2] IMPORTANT: Phase2 graph now contains BOTH Phase1 AND new nodes\n");
+    printf("[Phase 2]           Nodes 0-%" PRIu64 ": Phase 1 original nodes\n", phase1_node_count - 1);
+    printf("[Phase 2]           Nodes %" PRIu64 "-%" PRIu64 ": Phase 2 new nodes\n\n",
+           phase1_node_count, nodes_after - 1);
 
-    /* Save Phase 2 (expanded) graph */
-    graph_save(graph, "phase2_graph.adj", "adjacency");
-    graph_save(graph, "phase2_graph.edge", "edgelist");
-    graph_save_url_map(graph, "phase2_url_map.txt");
+    /* Save only newly crawled subgraph, then append into copied Phase 2 files with offset */
+    if (graph_save(graph, "phase2_new_graph.adj", "adjacency") != 0 ||
+        graph_save(graph, "phase2_new_graph.edge", "edgelist") != 0 ||
+        graph_save_url_map(graph, "phase2_new_url_map.txt") != 0) {
+        fprintf(stderr, "ERROR: Failed to save Phase 2 new subgraph files\n");
+        return 1;
+    }
+    /* Create offsetted versions of the new subgraph files so their
+       node IDs start from phase1_node_count instead of 0. Then append
+       the offset files into the copied Phase 1 union files. */
+    if (write_offset_adjacency("phase2_new_graph.adj", "phase2_new_graph.offset.adj", phase1_node_count) != 0 ||
+        write_offset_edges("phase2_new_graph.edge", "phase2_new_graph.offset.edge", phase1_node_count) != 0 ||
+        write_offset_url_map("phase2_new_url_map.txt", "phase2_new_url_map.offset.txt", phase1_node_count) != 0) {
+        fprintf(stderr, "ERROR: Failed to create offsetted Phase 2 new subgraph files\n");
+        return 1;
+    }
+
+    /* Replace originals with offset versions */
+    if (remove("phase2_new_graph.adj") != 0 || rename("phase2_new_graph.offset.adj", "phase2_new_graph.adj") != 0) {
+        fprintf(stderr, "WARNING: Failed to replace phase2_new_graph.adj with offset version\n");
+    }
+    if (remove("phase2_new_graph.edge") != 0 || rename("phase2_new_graph.offset.edge", "phase2_new_graph.edge") != 0) {
+        fprintf(stderr, "WARNING: Failed to replace phase2_new_graph.edge with offset version\n");
+    }
+    if (remove("phase2_new_url_map.txt") != 0 || rename("phase2_new_url_map.offset.txt", "phase2_new_url_map.txt") != 0) {
+        fprintf(stderr, "WARNING: Failed to replace phase2_new_url_map.txt with offset version\n");
+    }
+
+    if (append_file("phase2_new_graph.adj", "phase2_graph.adj") != 0 ||
+        append_file("phase2_new_graph.edge", "phase2_graph.edge") != 0 ||
+        append_file("phase2_new_url_map.txt", "phase2_url_map.txt") != 0) {
+        fprintf(stderr, "ERROR: Failed to append Phase 2 new subgraph into union graph files\n");
+        return 1;
+    }
+
+    /* Save phase1_node_count for incremental PageRank strategy */
+    FILE *meta = fopen("phase2_metadata.txt", "w");
+    if (meta) {
+        fprintf(meta, "phase1_node_count: %" PRIu64 "\n", phase1_node_count);
+        fprintf(meta, "phase1_edge_count: %" PRIu64 "\n", phase1_edge_count);
+        fprintf(meta, "phase2_total_nodes: %" PRIu64 "\n", nodes_after);
+        fprintf(meta, "phase2_total_edges: %" PRIu64 "\n", edges_after);
+        fclose(meta);
+        printf("[Phase 2] Saved metadata to phase2_metadata.txt\n");
+    }
 
     /* ==========================================================
        SUMMARY
        ========================================================== */
-    printf("\n============================================================\n");
-    printf("  INCREMENTAL GROWTH SUMMARY\n");
-    printf("============================================================\n");
-    printf("  Phase 1 (initial)     : %" PRIu64 " nodes, %" PRIu64 " edges\n",
+    printf("\n========================================================\n");
+    printf("  WORKFLOW SUMMARY\n");
+    printf("========================================================\n");
+    printf("\n  PHASE 1 (Pre-computed base graph):\n");
+    printf("    - Loaded & Ranked: %" PRIu64 " nodes, %" PRIu64 " edges\n",
            nodes_before, edges_before);
-    printf("  Phase 2 (after inject): %" PRIu64 " nodes, %" PRIu64 " edges\n",
+    printf("\n  PHASE 2 (Extended Phase 1 with new crawled pages):\n");
+    printf("    - New discovered: %" PRIu64 " nodes, %" PRIu64 " edges\n",
+           nodes_after - phase1_node_count, edges_after - phase1_edge_count);
+    printf("    - Total union: %" PRIu64 " nodes, %" PRIu64 " edges\n",
            nodes_after, edges_after);
-    printf("  New nodes added       : %" PRIu64 "\n",
-           nodes_after - nodes_before);
-    printf("  New edges added       : %" PRIu64 "\n",
-           edges_after - edges_before);
-    printf("  Phase 1 crawl time    : %.0f ms\n", p1_elapsed);
-    printf("  Phase 2 crawl time    : %.0f ms\n", p2_elapsed);
-    printf("============================================================\n");
+    printf("\n  UNION GRAPH ARCHITECTURE:\n");
+    printf("    - Node IDs 0-%" PRIu64 ": Original Phase 1 nodes\n", phase1_node_count - 1);
+    printf("    - Node IDs %" PRIu64 "-%" PRIu64 ": Newly discovered Phase 2 nodes\n",
+           phase1_node_count, nodes_after - 1);
+    printf("    - Phase 2 graph files CONTAIN THE COMPLETE UNION\n");
+    printf("    - Incremental PageRank: Initialize old nodes from Phase 1 ranks\n");
+    printf("    - Static PageRank: Recompute from scratch on full graph\n");
+    printf("    - Phase 2 crawl time: %.0f ms\n", p2_elapsed);
+    printf("========================================================\n");
     printf("\n  Output files:\n");
-    printf("    phase1_graph.adj / .edge   — graph before new pages\n");
-    printf("    phase1_ranks.txt           — converged PageRank scores\n");
-    printf("    phase1_url_map.txt         — URL-to-ID mapping (phase 1)\n");
-    printf("    phase2_graph.adj / .edge   — graph after new pages\n");
-    printf("    phase2_url_map.txt         — URL-to-ID mapping (phase 2)\n");
+    printf("    phase1_graph.adj / .edge   - Phase 1 base graph only\n");
+    printf("    phase1_ranks.txt           - Phase 1 PageRank scores (for warm-start)\n");
+    printf("    phase1_url_map.txt         - URL-to-ID mapping (phase 1)\n");
+    printf("    phase2_graph.adj / .edge   - COMPLETE UNION (copy + appended offset nodes)\n");
+    printf("    phase2_url_map.txt         - URL-to-ID mapping (complete union)\n");
+    printf("    phase2_metadata.txt        - Node count info for incremental PageRank\n");
     printf("\n  Next steps (other M3 members):\n");
     printf("    Shiza:       run incremental PageRank on phase2_graph.adj\n");
     printf("    Abdurrehman: instrument and compare recomputation cost\n");

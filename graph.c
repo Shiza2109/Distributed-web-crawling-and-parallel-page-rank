@@ -47,7 +47,8 @@ Graph* graph_create() {
 }
 
 
-int graph_add_node(Graph* g, const char* url) {
+int graph_add_node(void *graph, const char* url) {
+    Graph* g = (Graph*)graph;
     if (!g || !url) return -1;
     
     pthread_rwlock_wrlock(&g->lock);
