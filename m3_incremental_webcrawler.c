@@ -30,7 +30,7 @@
 #include "worker.h"
 #include "graph.h"
 #include "fetch.h"
-#include "pagerank.h"
+#include "parallel_pagerank.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -233,7 +233,7 @@ int main(int argc, char **argv) {
     printf("│  PHASE 1: PageRank Convergence              │\n");
     printf("└─────────────────────────────────────────────┘\n");
 
-    PageRankGraph *pg = pagerank_load_graph("phase1_graph.adj");
+    ParallelGraph *pg = parallel_load_graph("phase1_graph.adj");
     if (!pg) {
         fprintf(stderr, "Failed to load Phase 1 graph for PageRank\n");
         return 1;
@@ -242,12 +242,12 @@ int main(int argc, char **argv) {
     printf("[PageRank] Running parallel PageRank on Phase 1 graph "
            "(%d nodes, %d threads)...\n", pg->num_nodes, cfg.threads);
 
-    pagerank_compute_parallel(pg, cfg.threads);
-    pagerank_save_ranks(pg, "phase1_ranks.txt");
-    pagerank_print_ranks(pg);
+    parallel_pagerank_compute(pg, cfg.threads);
+    parallel_pagerank_save_ranks(pg, "phase1_ranks.txt");
+    parallel_pagerank_print_ranks(pg);
     printf("[PageRank] Phase 1 ranks saved to phase1_ranks.txt\n");
 
-    pagerank_free(pg);
+    parallel_free_graph(pg);
 
     /* ==========================================================
        PHASE 2 — Inject New Pages & Re-Crawl

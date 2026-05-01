@@ -39,8 +39,8 @@ benchmark_small.exe: benchmark_small_datasets.c pagerank_strategies.c pagerank.c
 
 # ---- Milestone 3 targets (Aleena) ----
 
-m3_incremental.exe: m3_incremental.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c pagerank.c
-	$(CC) $(CFLAGS) -o $@ m3_incremental.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c pagerank.c $(LDFLAGS) -lm
+m3_incremental.exe: m3_incremental.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c parallel_pagerank.c
+	$(CC) $(CFLAGS) -o $@ m3_incremental.c graph.c frontier.c crawl_policy.c fetch.c worker.c parser.c parallel_pagerank.c $(LDFLAGS) -lm
 
 # Clean
 clean:
