@@ -33,6 +33,23 @@ static double now_ms(void) {
 #include "m3_incremental_pagerank.h"
 #include "parallel_pagerank.h"
 
+static uint64_t estimate_graph_memory(IncrementalGraph *g) {
+    uint64_t bytes = sizeof(IncrementalGraph);
+    bytes += (uint64_t)g->num_nodes * sizeof(int);
+    bytes += (uint64_t)g->num_nodes * sizeof(int*);
+    bytes += (uint64_t)g->num_nodes * sizeof(double);
+    for (int i = 0; i < g->num_nodes; i++) {
+        if (g->adjacency[i]) {
+            bytes += (uint64_t)g->out_degree[i] * sizeof(int);
+        }
+    }
+    return bytes;
+}
+
+static uint64_t estimate_data_movement(int64_t active_count, uint64_t iterations) {
+    return (uint64_t)active_count * sizeof(double) * 2ULL * iterations;
+}
+
 /* ============================================================
    Graph Loading and Management
    ============================================================ */
@@ -206,7 +223,7 @@ RecomputationStats* incremental_pagerank_full(
     }
 
     /* Run parallel PageRank */
-    parallel_pagerank_compute(pg, num_threads);
+    PageRankResult pr = parallel_pagerank_compute(pg, num_threads);
 
     double elapsed = now_ms() - start_time;
 
@@ -225,9 +242,11 @@ RecomputationStats* incremental_pagerank_full(
     stats->num_nodes_new = phase2_graph->num_nodes;
     stats->num_new_nodes = phase2_graph->num_nodes;
     stats->num_affected_nodes = phase2_graph->num_nodes;
-    stats->iterations = 0;  /* Not tracked by parallel_pagerank */
+    stats->iterations = (uint64_t)pr.iterations;
     stats->elapsed_ms = elapsed;
-    stats->convergence_delta = 0.0;
+    stats->convergence_delta = pr.final_delta;
+    stats->memory_bytes = estimate_graph_memory(phase2_graph) * 2ULL;
+    stats->data_movement_bytes = estimate_data_movement(phase2_graph->num_nodes, stats->iterations);
 
     return stats;
 }
@@ -683,6 +702,21 @@ RecomputationStats* incremental_pagerank_incremental(
     free(reverse_degree);
     free(active_nodes);
 
+    uint64_t reverse_edges = 0;
+    for (int i = 0; i < phase2_graph->num_nodes; i++) {
+        reverse_edges += reverse_degree[i];
+    }
+
+    uint64_t memory_bytes = estimate_graph_memory(phase2_graph);
+    memory_bytes += (uint64_t)phase2_graph->num_nodes * sizeof(double);      /* next_rank */
+    memory_bytes += (uint64_t)phase2_graph->num_nodes * sizeof(int);         /* reverse_degree */
+    memory_bytes += (uint64_t)phase2_graph->num_nodes * sizeof(int*);        /* reverse_adjacency pointers */
+    memory_bytes += reverse_edges * sizeof(int);                             /* reverse adjacency entries */
+    memory_bytes += (uint64_t)phase2_graph->num_nodes * sizeof(unsigned char); /* active_mask */
+    memory_bytes += (uint64_t)phase2_graph->num_nodes * sizeof(int) * 2;     /* distance + queue */
+    memory_bytes += (uint64_t)active_count * sizeof(int);                    /* active_nodes */
+    memory_bytes += (uint64_t)seed_count * sizeof(int);                      /* seed_nodes */
+
     double elapsed = now_ms() - start_time;
 
     printf("========================================================\n");
@@ -696,6 +730,8 @@ RecomputationStats* incremental_pagerank_incremental(
     stats->iterations = (uint64_t)(iter + 1);
     stats->elapsed_ms = elapsed;
     stats->convergence_delta = final_delta;
+    stats->memory_bytes = memory_bytes;
+    stats->data_movement_bytes = estimate_data_movement(active_count, stats->iterations);
 
     return stats;
 }
@@ -754,13 +790,22 @@ ComparisonResult* incremental_compare_strategies(
     double speedup = full_stats->elapsed_ms / (incr_stats->elapsed_ms + 1e-6);
     double avg_rank_diff = 0.0;
     double max_rank_diff = 0.0;
+    double l1_rank_diff = 0.0;
+    double l2_rank_diff = 0.0;
 
     for (int i = 0; i < phase2->num_nodes; i++) {
         double diff = fabs(phase2_copy1->ranks[i] - phase2_copy2->ranks[i]);
         avg_rank_diff += diff;
+        l1_rank_diff += diff;
+        l2_rank_diff += diff * diff;
         if (diff > max_rank_diff) max_rank_diff = diff;
     }
     avg_rank_diff /= phase2->num_nodes;
+    l2_rank_diff = sqrt(l2_rank_diff);
+
+    ComparisonResult *result = (ComparisonResult*)malloc(sizeof(ComparisonResult));
+    result->l1_rank_diff = l1_rank_diff;
+    result->l2_rank_diff = l2_rank_diff;
 
     /* Print comparison */
     printf("\n");
@@ -775,12 +820,18 @@ ComparisonResult* incremental_compare_strategies(
            full_stats->iterations, incr_stats->iterations);
     printf("| Final Convergence Delta   | %12e | %12e              |\n",
            full_stats->convergence_delta, incr_stats->convergence_delta);
+    printf("| Memory Footprint (bytes)  | %12" PRIu64 " | %12" PRIu64 "              |\n",
+           full_stats->memory_bytes, incr_stats->memory_bytes);
+    printf("| Data Movement (bytes)     | %12" PRIu64 " | %12" PRIu64 "              |\n",
+           full_stats->data_movement_bytes, incr_stats->data_movement_bytes);
     printf("| Nodes Affected            | %12d | %12d              |\n",
            full_stats->num_affected_nodes, incr_stats->num_affected_nodes);
     printf("+---------------------------+----------------+-----------------------------+\n");
     printf("| Speedup (Incremental)     | %.2fx faster                                     |\n", speedup);
     printf("| Avg Rank Difference       | %.6e                                 |\n", avg_rank_diff);
     printf("| Max Rank Difference       | %.6e                                 |\n", max_rank_diff);
+    printf("| L1 Rank Difference        | %.6e                                 |\n", result->l1_rank_diff);
+    printf("| L2 Rank Difference        | %.6e                                 |\n", result->l2_rank_diff);
     printf("+--------------------------------------------------------------------------+\n");
 
     /* Save incremental ranks */
@@ -795,7 +846,6 @@ ComparisonResult* incremental_compare_strategies(
     incremental_free_graph(phase2_copy1);
     incremental_free_graph(phase2_copy2);
 
-    ComparisonResult *result = (ComparisonResult*)malloc(sizeof(ComparisonResult));
     result->full = full_stats;
     result->incremental = incr_stats;
     result->speedup = speedup;

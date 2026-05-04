@@ -272,7 +272,7 @@ double compute_iteration(Graph *g, int num_threads) {
     return total_delta;
 }
 
-void parallel_pagerank_compute(Graph *g, int num_threads) {
+PageRankResult parallel_pagerank_compute(Graph *g, int num_threads) {
     g->num_threads = num_threads;
     
     printf("\n========================================================\n");
@@ -284,6 +284,7 @@ void parallel_pagerank_compute(Graph *g, int num_threads) {
     printf("========================================================\n\n");
     
     int iter = 0;
+    PageRankResult result = {0, 0.0};
     while (1) {
         double delta = compute_iteration(g, num_threads);
         
@@ -292,11 +293,14 @@ void parallel_pagerank_compute(Graph *g, int num_threads) {
         if (delta < CONVERGENCE_THRESHOLD) {
             printf("\n  Converged at iteration %d\n", iter);
             printf("========================================================\n\n");
+            result.iterations = iter + 1;
+            result.final_delta = delta;
             break;
         }
         
         iter++;
     }
+    return result;
 }
 
 void parallel_pagerank_save_ranks(Graph *g, const char *output_file) {

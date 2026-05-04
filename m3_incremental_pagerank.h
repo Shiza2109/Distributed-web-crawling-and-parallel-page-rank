@@ -20,6 +20,8 @@ typedef struct {
     uint64_t iterations;       /* Number of iterations to convergence */
     double elapsed_ms;         /* Computation time in milliseconds */
     double convergence_delta;  /* Final delta value at convergence */
+    uint64_t memory_bytes;     /* Estimated memory footprint */
+    uint64_t data_movement_bytes; /* Estimated rank data movement */
 } RecomputationStats;
 
 #define DAMPING_FACTOR 0.85
@@ -62,6 +64,8 @@ typedef struct {
     double speedup;            /* incremental time / full time */
     double avg_rank_diff;      /* average difference between strategies */
     double max_rank_diff;      /* maximum difference between strategies */
+    double l1_rank_diff;       /* L1 norm of rank difference */
+    double l2_rank_diff;       /* L2 norm of rank difference */
 } ComparisonResult;
 
 ComparisonResult* incremental_compare_strategies(

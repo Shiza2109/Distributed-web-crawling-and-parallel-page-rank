@@ -17,6 +17,11 @@ typedef struct {
 #define DAMPING_FACTOR 0.85
 #define CONVERGENCE_THRESHOLD 1e-10
 
+typedef struct {
+    int iterations;
+    double final_delta;
+} PageRankResult;
+
 /* Allocate a graph structure */
 ParallelGraph* parallel_allocate_graph(int num_nodes);
 
@@ -24,7 +29,7 @@ ParallelGraph* parallel_allocate_graph(int num_nodes);
 ParallelGraph* parallel_load_graph(const char *filename);
 
 /* Compute parallel PageRank with specified number of threads */
-void parallel_pagerank_compute(ParallelGraph *g, int num_threads);
+PageRankResult parallel_pagerank_compute(ParallelGraph *g, int num_threads);
 
 /* Save ranks to output file */
 void parallel_pagerank_save_ranks(ParallelGraph *g, const char *filename);
