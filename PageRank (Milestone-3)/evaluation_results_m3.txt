@@ -1,0 +1,90 @@
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    MILESTONE 3 PART 4 - STRUCTURED EVALUATION                ║
+║                                                                              ║
+║  Comparing:                                                                  ║
+║    1. Sequential vs Parallel PageRank                                        ║
+║    2. Different Partitioning Strategies                                      ║
+║    3. Static vs Incremental Computation                                      ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+[Configuration]
+  Phase 1 Graph: phase1_graph.adj
+  Phase 2 Graph: phase2_graph.adj
+  Threads:       4
+
++--------------------------------------------------------------------------+
+| LOADING GRAPHS FROM FILES (Memory-Efficient Mode)                        |
++--------------------------------------------------------------------------+
+[FileComparison] Loading Phase 1 from phase1_graph.adj...
+[IncrementalPageRank] Loading graph: 823 nodes from phase1_graph.adj
+[IncrementalPageRank] Loaded: 823 nodes, 821 edges
+[FileComparison] Phase 1: 823 nodes, 821 edges
+[FileComparison] Loading Phase 2 from phase2_graph.adj...
+[IncrementalPageRank] Loading graph: 1166 nodes from phase2_graph.adj
+[IncrementalPageRank] Loaded: 1166 nodes, 1168 edges
+[FileComparison] Phase 2: 1166 nodes, 1168 edges
+
+========================================================
+  PAGERANK RECOMPUTATION STRATEGY COMPARISON
+========================================================
+
+========================================================
+  STATIC PAGERANK: Full Recomputation
+========================================================
+  Nodes: 1166, Threads: 4
+========================================================
+
+
+========================================================
+  PARALLEL PAGERANK COMPUTATION
+========================================================
+  Threads              : 4
+  Damping Factor       : 0.85
+  Convergence Threshold: 1e-10
+========================================================
+
+  Iteration   0: delta=8.441681e-01
+  Iteration   1: delta=6.181453e-03
+  Iteration   2: delta=1.257245e-05
+  Iteration   3: delta=1.101201e-07
+  Iteration   4: delta=1.145601e-09
+  Iteration   5: delta=1.297190e-11
+
+  Converged at iteration 5
+========================================================
+
+========================================================
+  Static PageRank Complete: 16 ms
+
+
+========================================================
+  INCREMENTAL PAGERANK: Warm-Start with Phase 1 Baseline
+========================================================
+  Phase 2 Union Graph: 1166 total nodes
+  Threads: 4
+========================================================
+
+  [Incremental] Node ranges detected:
+    - Phase 1 nodes: 0 to 822 (count: 823)
+    - Phase 2 new nodes: 823 to 1165 (count: 343)
+  [Incremental] Loading Phase 1 ranks for warm-start...
+  [Incremental] Initialized 823 Phase 1 nodes with saved ranks
+  [Incremental] Initialized 343 Phase 2 new nodes with teleport_rank=1.286449e-04 and scaled Phase 1 ranks (sum_new=4.412521e-02)
+
+  [Incremental] Seed affected nodes: 343
+  [Incremental] Active region expanded to 916 nodes within 3 hops
+  [Incremental] Only active nodes are updated; others are frozen
+  Iteration   0: delta=5.873341e-01
+  Iteration   1: delta=3.484957e-03
+  Iteration   2: delta=3.444723e-06
+  Iteration   3: delta=1.368310e-08
+  Iteration   4: delta=5.536040e-11
+
+  Converged at iteration 4
+========================================================
+  Incremental PageRank Complete: 0 ms
+
+
++--------------------------------------------------------------------------+
+| COMPARISON 
